@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Submit Timesheet</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    label { display: block; margin-top: 1rem; }
+    input { padding: 0.5rem; width: 100%; max-width: 300px; }
+    .hours-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .hours-grid div { display: flex; flex-direction: column; }
+    button {
+      margin-top: 2rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover { opacity: 0.9; }
+    .error {
+      color: red;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+    .preview {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      max-width: 320px;
+    }
+    .preview p {
+      margin: 0.3rem 0;
+      font-weight: bold;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('timesheetForm');
+      const weekInput = document.getElementById('week_start');
+
+      // Grab all hour inputs and rate input
+      const inputs = {
+        monday:    document.getElementById('monday'),
+        tuesday:   document.getElementById('tuesday'),
+        wednesday: document.getElementById('wednesday'),
+        thursday:  document.getElementById('thursday'),
+        friday:    document.getElementById('friday'),
+        saturday:  document.getElementById('saturday_hours'),
+        sunday:    document.getElementById('sunday_hours'),
+        rate:      document.getElementById('hourly_rate')
+      };
+
+      const totalHoursEl = document.getElementById('totalHoursPreview');
+      const estimatedPayEl = document.getElementById('estimatedPayPreview');
+
+      // Helper: check if a date is Monday
+      function isMonday(dateString) {
+        const d = new Date(dateString);
+        return d.getDay() === 1; // 1 = Monday
+      }
+
+      // Utility to show an error message under a given input
+      function showError(inputElem, message) {
+        const error = document.createElement('div');
+        error.className = 'error';
+        error.innerText = message;
+        inputElem.parentNode.appendChild(error);
+      }
+
+      // Recalculate and update the preview area
+      function updatePreview() {
+        // Parse floats or default to zero
+        const m = parseFloat(inputs.monday.value)    || 0;
+        const t = parseFloat(inputs.tuesday.value)   || 0;
+        const w = parseFloat(inputs.wednesday.value) || 0;
+        const th= parseFloat(inputs.thursday.value)  || 0;
+        const f = parseFloat(inputs.friday.value)    || 0;
+        const sa= parseFloat(inputs.saturday.value)  || 0;
+        const su= parseFloat(inputs.sunday.value)    || 0;
+        const r = parseFloat(inputs.rate.value)      || 0;
+
+        const basic = m + t + w + th + f;
+        const total = basic + sa + su;
+        const pay = (basic * r) + (sa * r * 1.5) + (su * r * 1.75);
+
+        totalHoursEl.innerText = total.toFixed(2) + ' hrs';
+        estimatedPayEl.innerText = (r > 0)
+          ? '£' + pay.toFixed(2)
+          : '£0.00';
+      }
+
+      // Front-end validation on form submit
+      form.addEventListener('submit', function(event) {
+        // Clear previous error messages
+        document.querySelectorAll('.error').forEach(el => el.remove());
+        let hasError = false;
+
+        // 1) Check week_start is Monday
+        if (!isMonday(weekInput.value)) {
+          showError(weekInput, 'Week must start on a Monday.');
+          hasError = true;
+        }
+
+        // 2) Check each number field >= 0 and numeric
+        const numberFields = [
+          'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
+          'saturday_hours', 'sunday_hours', 'hourly_rate'
+        ];
+        numberFields.forEach(name => {
+          const input = document.getElementById(name);
+          const val = parseFloat(input.value);
+          if (isNaN(val) || val < 0) {
+            showError(input, 'Please enter a non-negative number.');
+            hasError = true;
+          }
+        });
+
+        // 3) Rate must be > 0
+        const rateVal = parseFloat(inputs.rate.value);
+        if (rateVal <= 0) {
+          showError(inputs.rate, 'Rate must be greater than £0.');
+          hasError = true;
+        }
+
+        // 4) Ensure at least one day has > 0 hours
+        const hoursValues = [
+          parseFloat(inputs.monday.value)    || 0,
+          parseFloat(inputs.tuesday.value)   || 0,
+          parseFloat(inputs.wednesday.value) || 0,
+          parseFloat(inputs.thursday.value)  || 0,
+          parseFloat(inputs.friday.value)    || 0,
+          parseFloat(inputs.saturday.value)  || 0,
+          parseFloat(inputs.sunday.value)    || 0
+        ];
+        const anyPositive = hoursValues.some(h => h > 0);
+        if (!anyPositive) {
+          showError(inputs.monday, 'At least one day must have hours > 0.');
+          hasError = true;
+        }
+
+        if (hasError) {
+          event.preventDefault(); // Stop submission if validation failed
+        }
+      });
+
+      // On change of any input, recalc preview
+      Object.values(inputs).forEach(el => {
+        el.addEventListener('input', updatePreview);
+      });
+
+      // On-change: warn if week_start is not Monday
+      weekInput.addEventListener('change', function() {
+        if (this.value && !isMonday(this.value)) {
+          showError(this, 'Please pick a Monday for the week start.');
+          this.value = '';
+        }
+      });
+
+      // Initialize preview on load
+      updatePreview();
+    });
+  </script>
+</head>
+<body>
+  <h1>Submit Your Timesheet</h1>
+  <form id="timesheetForm" method="POST" action="/">
+    <!-- Contractor Name -->
+    <label for="contractor_name">Contractor Name:</label>
+    <input type="text" id="contractor_name" name="contractor_name" required />
+
+    <!-- Client -->
+    <label for="client">Client:</label>
+    <input type="text" id="client" name="client" required />
+
+    <!-- Site Address -->
+    <label for="site_address">Site Address:</label>
+    <input type="text" id="site_address" name="site_address" required />
+
+    <!-- Week Start Date (must be a Monday) -->
+    <label for="week_start">Week Starting (Monday):</label>
+    <input type="date" id="week_start" name="week_start" required />
+
+    <!-- Hours: Mon–Fri individually, plus Sat and Sun -->
+    <label>Enter Hours Worked (Mon–Sun):</label>
+    <div class="hours-grid">
+      <!-- Monday -->
+      <div>
+        <label for="monday">Monday:</label>
+        <input type="number" step="0.25" min="0" id="monday" name="monday" value="0" required />
+      </div>
+      <!-- Tuesday -->
+      <div>
+        <label for="tuesday">Tuesday:</label>
+        <input type="number" step="0.25" min="0" id="tuesday" name="tuesday" value="0" required />
+      </div>
+      <!-- Wednesday -->
+      <div>
+        <label for="wednesday">Wednesday:</label>
+        <input type="number" step="0.25" min="0" id="wednesday" name="wednesday" value="0" required />
+      </div>
+      <!-- Thursday -->
+      <div>
+        <label for="thursday">Thursday:</label>
+        <input type="number" step="0.25" min="0" id="thursday" name="thursday" value="0" required />
+      </div>
+      <!-- Friday -->
+      <div>
+        <label for="friday">Friday:</label>
+        <input type="number" step="0.25" min="0" id="friday" name="friday" value="0" required />
+      </div>
+      <!-- Saturday -->
+      <div>
+        <label for="saturday_hours">Saturday (1.5×):</label>
+        <input type="number" step="0.25" min="0" id="saturday_hours" name="saturday_hours" value="0" required />
+      </div>
+      <!-- Sunday -->
+      <div>
+        <label for="sunday_hours">Sunday (1.75×):</label>
+        <input type="number" step="0.25" min="0" id="sunday_hours" name="sunday_hours" value="0" required />
+      </div>
+    </div>
+
+    <!-- Hourly Rate -->
+    <label for="hourly_rate">Hourly Rate (£):</label>
+    <input type="number" step="0.01" min="0" id="hourly_rate" name="hourly_rate" value="0" required />
+
+    <!-- Live Preview Section -->
+    <div class="preview">
+      <p>Total Hours: <span id="totalHoursPreview">0.00 hrs</span></p>
+      <p>Estimated Pay: <span id="estimatedPayPreview">£0.00</span></p>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit">Submit for Approval</button>
+  </form>
+</body>
+</html>
