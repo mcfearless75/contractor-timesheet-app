@@ -179,21 +179,34 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        email = request.form['email']
-        if not email or '@' not in email:
-            flash('Invalid email address.', 'danger')
+        username = request.form['username'].strip()
+        email = request.form['email'].strip().lower()
+        password = request.form['password']
+
+        if not username or not email or not password:
+            flash('All fields are required.', 'danger')
             return redirect(url_for('register'))
 
-        hashed_pw = generate_password_hash(request.form['password'])
-        user = User(
-            username=request.form['username'],
-            email=email,
-            password=hashed_pw
-        )
-        db.session.add(user)
+        if '@' not in email:
+            flash('Please enter a valid email.', 'danger')
+            return redirect(url_for('register'))
+
+        existing_user = User.query.filter(
+            (User.username == username) | (User.email == email)
+        ).first()
+        if existing_user:
+            flash('Username or email already registered.', 'danger')
+            return redirect(url_for('register'))
+
+        hashed_pw = generate_password_hash(password)
+        new_user = User(username=username, email=email, password=hashed_pw)
+
+        db.session.add(new_user)
         db.session.commit()
+
         flash('Account created! Please log in.', 'success')
         return redirect(url_for('login'))
+
     return render_template('register.html')
 
 @app.route('/logout')
