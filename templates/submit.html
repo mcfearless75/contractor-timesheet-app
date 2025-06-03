@@ -5,6 +5,16 @@
   <title>Submit Timesheet</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 2rem; }
+    .logo-container {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .logo-container img {
+      width: 120px;           /* Adjust as needed */
+      height: auto;
+      border-radius: 8px;     /* Slight rounding for a playful touch */
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
     label { display: block; margin-top: 1rem; }
     input { padding: 0.5rem; width: 100%; max-width: 300px; }
     .hours-grid {
@@ -173,6 +183,12 @@
   </script>
 </head>
 <body>
+  <!-- CHEEKY LOGO AT THE TOP -->
+  <div class="logo-container">
+    <!-- Make sure you upload your logo file to: static/logo.png -->
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Cheeky Logo">
+  </div>
+
   <h1>Submit Your Timesheet</h1>
   <form id="timesheetForm" method="POST" action="/">
     <!-- Contractor Name -->
