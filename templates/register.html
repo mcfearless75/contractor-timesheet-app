@@ -1,20 +1,71 @@
 {% extends "base.html" %}
 {% block title %}Register{% endblock %}
+
 {% block content %}
-<h2>Register</h2>
-<form method="POST">
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Register</h2>
+  <form method="POST" class="col-md-6 mx-auto">
+    <!-- Username -->
     <div class="mb-3">
-        <label class="form-label">Username</label>
-        <input type="text" name="username" class="form-control" required>
+      <label for="username" class="form-label">Username</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        class="form-control"
+        placeholder="Choose a username"
+        required
+      >
     </div>
+
+    <!-- Email -->
     <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input type="email" name="email" class="form-control" required>
+      <label for="email" class="form-label">Email</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        class="form-control"
+        placeholder="you@example.com"
+        required
+      >
     </div>
+
+    <!-- Password -->
     <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input type="password" name="password" class="form-control" required>
+      <label for="password" class="form-label">Password</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        class="form-control"
+        placeholder="Choose a secure password"
+        required
+      >
     </div>
-    <button type="submit" class="btn btn-success">Register</button>
-</form>
+
+    <!-- Security Answer (new) -->
+    <div class="mb-3">
+      <label for="security_answer" class="form-label">
+        Security Answer <br class="d-block small text-muted">
+        <small>(e.g. "What is your favorite color?")</small>
+      </label>
+      <input
+        type="text"
+        id="security_answer"
+        name="security_answer"
+        class="form-control"
+        placeholder="Your answer here"
+        required
+      >
+    </div>
+
+    <!-- Submit Button -->
+    <div class="d-grid gap-2">
+      <button type="submit" class="btn btn-success btn-lg">
+        Register
+      </button>
+    </div>
+  </form>
+</div>
 {% endblock %}
