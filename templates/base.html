@@ -24,7 +24,7 @@
 
   <style>
     /* --------------------------------------------------------------
-       SIDEBAR
+       BODY & BACKGROUND
      -------------------------------------------------------------- */
     body {
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -32,6 +32,10 @@
       margin: 0;
       padding: 0;
     }
+
+    /* --------------------------------------------------------------
+       SIDEBAR
+     -------------------------------------------------------------- */
     #sidebar {
       height: 100vh;
       background-color: #343a40;
@@ -41,18 +45,6 @@
       left: 0;
       width: 240px;
       padding-top: 1rem;
-    }
-    #sidebar .nav-link {
-      color: #adb5bd;
-      padding: 0.75rem 1.25rem;
-    }
-    #sidebar .nav-link:hover {
-      background-color: #495057;
-      color: #fff;
-    }
-    #sidebar .nav-link.active {
-      background-color: #007bff;
-      color: #fff;
     }
     #sidebar .sidebar-header {
       text-align: center;
@@ -66,6 +58,18 @@
     #sidebar .sidebar-header h4 {
       font-size: 1.1rem;
       margin: 0;
+      color: #fff;
+    }
+    #sidebar .nav-link {
+      color: #adb5bd;
+      padding: 0.75rem 1.25rem;
+    }
+    #sidebar .nav-link:hover {
+      background-color: #495057;
+      color: #fff;
+    }
+    #sidebar .nav-link.active {
+      background-color: #007bff;
       color: #fff;
     }
 
@@ -129,6 +133,10 @@
         left: 0;
         width: 100%;
       }
+      #main-content {
+        margin-top: 56px;
+        padding: 1rem;
+      }
     }
   </style>
 
@@ -147,19 +155,18 @@
           <i class="fas fa-file-alt me-2"></i>Submit Timesheet
         </a>
       </li>
+      {% if session.get('is_manager') %}
       <li class="nav-item">
         <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
           <i class="fas fa-table me-2"></i>Dashboard
         </a>
       </li>
-      <!-- Placeholder for future items
-      <li class="nav-item">
-        <a class="nav-link" href="#"><i class="fas fa-file-invoice-dollar me-2"></i> Invoicing</a>
+      <li class="nav-item mt-3">
+        <a class="nav-link text-danger" href="{{ url_for('logout') }}">
+          <i class="fas fa-sign-out-alt me-2"></i>Log Out
+        </a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#"><i class="fas fa-cogs me-2"></i> Settings</a>
-      </li>
-      -->
+      {% endif %}
     </ul>
   </nav>
 
