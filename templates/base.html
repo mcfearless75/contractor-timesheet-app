@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Timesheet Portal{% endblock %}</title>
+
+  <!-- Bootstrap 5 CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-ENjdO4Dr2bkBIFxQpeoU8x6EQf8uW9QrgiDh2zS++M1AiYkAQpF3YiFE61ur8+Xf"
+    crossorigin="anonymous"
+  />
+
+  <!-- Font Awesome for sidebar icons -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css"
+    integrity="sha512-2hlYHeDBgXfHWOaY4qbIxRjh/8TF/7fzPxakSLHGJOC3IxfmT1F1xvuS0w4LiJmXWg4r1h5l0LQA5Qix3hVD0Q=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+  <style>
+    /* --------------------------------------------------------------
+       SIDEBAR
+     -------------------------------------------------------------- */
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 0;
+    }
+    #sidebar {
+      height: 100vh;
+      background-color: #343a40;
+      color: #fff;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 240px;
+      padding-top: 1rem;
+    }
+    #sidebar .nav-link {
+      color: #adb5bd;
+      padding: 0.75rem 1.25rem;
+    }
+    #sidebar .nav-link:hover {
+      background-color: #495057;
+      color: #fff;
+    }
+    #sidebar .nav-link.active {
+      background-color: #007bff;
+      color: #fff;
+    }
+    #sidebar .sidebar-header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    #sidebar .sidebar-header img {
+      width: 60px;
+      height: auto;
+      margin-bottom: 0.5rem;
+    }
+    #sidebar .sidebar-header h4 {
+      font-size: 1.1rem;
+      margin: 0;
+      color: #fff;
+    }
+
+    /* --------------------------------------------------------------
+       TOPBAR
+     -------------------------------------------------------------- */
+    #content {
+      margin-left: 240px;
+      width: calc(100% - 240px);
+    }
+    #topbar {
+      height: 56px;
+      background-color: #fff;
+      border-bottom: 1px solid #dee2e6;
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      position: fixed;
+      top: 0;
+      left: 240px;
+      width: calc(100% - 240px);
+      z-index: 1000;
+    }
+    #topbar .breadcrumb {
+      margin-bottom: 0;
+      background-color: transparent;
+    }
+    #main-content {
+      margin-top: 56px;
+      padding: 1.5rem;
+    }
+
+    /* --------------------------------------------------------------
+       WIDGETS & CARDS
+     -------------------------------------------------------------- */
+    .card {
+      border-radius: 0.5rem;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+    }
+    .card-header {
+      background-color: #fff;
+      border-bottom: none;
+      font-weight: 600;
+      color: #495057;
+    }
+
+    /* --------------------------------------------------------------
+       RESPONSIVE TWEAKS
+     -------------------------------------------------------------- */
+    @media (max-width: 767.98px) {
+      #sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+      #content {
+        margin-left: 0;
+        width: 100%;
+      }
+      #topbar {
+        left: 0;
+        width: 100%;
+      }
+    }
+  </style>
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <!-- Sidebar -->
+  <nav id="sidebar" class="d-flex flex-column">
+    <div class="sidebar-header">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
+      <h4>Timesheet Portal</h4>
+    </div>
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('submit_timesheet') }}">
+          <i class="fas fa-file-alt me-2"></i>Submit Timesheet
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+          <i class="fas fa-table me-2"></i>Dashboard
+        </a>
+      </li>
+      <!-- Placeholder for future items
+      <li class="nav-item">
+        <a class="nav-link" href="#"><i class="fas fa-file-invoice-dollar me-2"></i> Invoicing</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#"><i class="fas fa-cogs me-2"></i> Settings</a>
+      </li>
+      -->
+    </ul>
+  </nav>
+
+  <!-- Page Content -->
+  <div id="content">
+    <!-- Topbar (breadcrumb / page title) -->
+    <div id="topbar">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          {% block breadcrumb %}{% endblock %}
+        </ol>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ENjdO4Dr2bkBIFxQpeoU8x6EQf8uW9QrgiDh2zS++M1AiYkAQpF3YiFE61ur8+Xf"
+    crossorigin="anonymous"
+  ></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

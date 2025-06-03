@@ -1,87 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Submit Timesheet</title>
-  <!-- Bootstrap 5 CSS via CDN -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-    integrity="sha384-ENjdO4Dr2bkBIFxQpeoU8x6EQf8uW9QrgiDh2zS++M1AiYkAQpF3YiFE61ur8+Xf"
-    crossorigin="anonymous"
-  >
-  <style>
-    body {
-      background-color: #f8f9fa;
-    }
-    .card {
-      border-radius: 0.75rem;
-      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
-    .hours-grid .form-floating {
-      margin-bottom: 1rem;
-    }
-    .preview {
-      background: #ffffff;
-      border: 1px solid #dee2e6;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      margin-top: 1.5rem;
-    }
-    .preview p {
-      margin: 0.5rem 0;
-      font-weight: 600;
-    }
-    .error-text {
-      color: #dc3545;
-      font-size: 0.875rem;
-    }
-  </style>
-</head>
-<body>
-  <!-- Navbar with a single, small logo -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="/">
-        <!-- Make sure your logo is at static/logo.png -->
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" style="width:40px; height:auto; margin-right:8px;">
-        <span>Contractor Portal</span>
-      </a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarNav"
-        aria-controls="navbarNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link active" href="/">Submit Timesheet</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+{% extends "base.html" %}
 
-  <!-- Main container -->
-  <div class="container mb-5">
-    <div class="row justify-content-center">
-      <div class="col-lg-8">
-        <div class="card p-4 bg-white">
-          <h2 class="text-center mb-4">Submit Your Timesheet</h2>
+{% block title %}Submit Timesheet{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{{ url_for('submit_timesheet') }}">Home</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Submit Timesheet</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+      <div class="card mb-4">
+        <div class="card-header">Submit Your Timesheet</div>
+        <div class="card-body">
           <form id="timesheetForm" method="POST" action="/">
-            <div class="row">
+            <div class="row g-3">
               <!-- Contractor Name -->
-              <div class="col-md-6 mb-3">
+              <div class="col-md-6">
                 <div class="form-floating">
                   <input
                     type="text"
@@ -96,7 +32,7 @@
                 </div>
               </div>
               <!-- Client -->
-              <div class="col-md-6 mb-3">
+              <div class="col-md-6">
                 <div class="form-floating">
                   <input
                     type="text"
@@ -112,25 +48,27 @@
               </div>
             </div>
 
-            <!-- Site Address -->
-            <div class="mb-3">
-              <div class="form-floating">
-                <input
-                  type="text"
-                  class="form-control"
-                  id="site_address"
-                  name="site_address"
-                  placeholder="Site Address"
-                  required
-                >
-                <label for="site_address">Site Address</label>
-                <div class="error-text" id="error-site_address"></div>
+            <div class="row g-3 mt-3">
+              <!-- Site Address -->
+              <div class="col-12">
+                <div class="form-floating">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="site_address"
+                    name="site_address"
+                    placeholder="Site Address"
+                    required
+                  >
+                  <label for="site_address">Site Address</label>
+                  <div class="error-text" id="error-site_address"></div>
+                </div>
               </div>
             </div>
 
-            <div class="row">
+            <div class="row g-3 mt-3">
               <!-- Week Start Date -->
-              <div class="col-md-6 mb-3">
+              <div class="col-md-6">
                 <div class="form-floating">
                   <input
                     type="date"
@@ -144,7 +82,7 @@
                 </div>
               </div>
               <!-- Hourly Rate -->
-              <div class="col-md-6 mb-3">
+              <div class="col-md-6">
                 <div class="form-floating">
                   <input
                     type="number"
@@ -164,10 +102,12 @@
             </div>
 
             <!-- Hours Grid -->
-            <label class="form-label fw-semibold mt-3">Enter Hours Worked (Mon–Sun)</label>
-            <div class="row hours-grid">
+            <div class="row g-3 mt-3">
+              <div class="col-12">
+                <label class="form-label fw-semibold">Enter Hours Worked (Mon–Sun)</label>
+              </div>
               <!-- Monday -->
-              <div class="col-md-4">
+              <div class="col-sm-6 col-md-4">
                 <div class="form-floating">
                   <input
                     type="number"
@@ -185,7 +125,7 @@
                 </div>
               </div>
               <!-- Tuesday -->
-              <div class="col-md-4">
+              <div class="col-sm-6 col-md-4">
                 <div class="form-floating">
                   <input
                     type="number"
@@ -203,7 +143,7 @@
                 </div>
               </div>
               <!-- Wednesday -->
-              <div class="col-md-4">
+              <div class="col-sm-6 col-md-4">
                 <div class="form-floating">
                   <input
                     type="number"
@@ -221,7 +161,7 @@
                 </div>
               </div>
               <!-- Thursday -->
-              <div class="col-md-4">
+              <div class="col-sm-6 col-md-4">
                 <div class="form-floating">
                   <input
                     type="number"
@@ -239,7 +179,7 @@
                 </div>
               </div>
               <!-- Friday -->
-              <div class="col-md-4">
+              <div class="col-sm-6 col-md-4">
                 <div class="form-floating">
                   <input
                     type="number"
@@ -257,7 +197,7 @@
                 </div>
               </div>
               <!-- Saturday -->
-              <div class="col-md-4">
+              <div class="col-sm-6 col-md-4">
                 <div class="form-floating">
                   <input
                     type="number"
@@ -275,7 +215,7 @@
                 </div>
               </div>
               <!-- Sunday -->
-              <div class="col-md-4">
+              <div class="col-sm-6 col-md-4">
                 <div class="form-floating">
                   <input
                     type="number"
@@ -295,166 +235,158 @@
             </div>
 
             <!-- Live Preview Section -->
-            <div class="preview">
+            <div class="preview mt-4">
               <p>Total Hours: <span id="totalHoursPreview">0.00 hrs</span></p>
               <p>Estimated Pay: <span id="estimatedPayPreview">£0.00</span></p>
             </div>
 
             <!-- Submit Button -->
             <div class="d-grid mt-4">
-              <button type="submit" class="btn btn-primary btn-lg">
-                Submit for Approval
-              </button>
+              <button type="submit" class="btn btn-primary btn-lg">Submit for Approval</button>
             </div>
           </form>
-        </div> <!-- .card -->
-      </div> <!-- .col-lg-8 -->
-    </div> <!-- .row -->
-  </div> <!-- .container -->
+        </div> <!-- .card-body -->
+      </div> <!-- .card -->
+    </div> <!-- .col -->
+  </div> <!-- .row -->
+</div> <!-- .container-fluid -->
+{% endblock %}
 
-  <!-- Bootstrap 5 JS Bundle -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-ENjdO4Dr2bkBIFxQpeoU8x6EQf8uW9QrgiDh2zS++M1AiYkAQpF3YiFE61ur8+Xf"
-    crossorigin="anonymous"
-  ></script>
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('timesheetForm');
+    const weekInput = document.getElementById('week_start');
 
-  <!-- Inline JS for validation & preview (same logic as before) -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const form = document.getElementById('timesheetForm');
-      const weekInput = document.getElementById('week_start');
+    // Grab all hour inputs and rate input
+    const inputs = {
+      monday:    document.getElementById('monday'),
+      tuesday:   document.getElementById('tuesday'),
+      wednesday: document.getElementById('wednesday'),
+      thursday:  document.getElementById('thursday'),
+      friday:    document.getElementById('friday'),
+      saturday:  document.getElementById('saturday_hours'),
+      sunday:    document.getElementById('sunday_hours'),
+      rate:      document.getElementById('hourly_rate')
+    };
 
-      // Grab all hour inputs and rate input
-      const inputs = {
-        monday:    document.getElementById('monday'),
-        tuesday:   document.getElementById('tuesday'),
-        wednesday: document.getElementById('wednesday'),
-        thursday:  document.getElementById('thursday'),
-        friday:    document.getElementById('friday'),
-        saturday:  document.getElementById('saturday_hours'),
-        sunday:    document.getElementById('sunday_hours'),
-        rate:      document.getElementById('hourly_rate')
-      };
+    // Preview spans
+    const totalHoursEl = document.getElementById('totalHoursPreview');
+    const estimatedPayEl = document.getElementById('estimatedPayPreview');
 
-      // Preview spans
-      const totalHoursEl = document.getElementById('totalHoursPreview');
-      const estimatedPayEl = document.getElementById('estimatedPayPreview');
+    // Utility: check if a date is Monday
+    function isMonday(dateString) {
+      const d = new Date(dateString);
+      return d.getDay() === 1; // 1 = Monday
+    }
 
-      // Utility: check if a date is Monday
-      function isMonday(dateString) {
-        const d = new Date(dateString);
-        return d.getDay() === 1; // 1 = Monday
+    // Utility to show an error message under a given input
+    function showError(inputElem, message) {
+      const errorId = 'error-' + inputElem.id;
+      let errorElem = document.getElementById(errorId);
+      if (!errorElem) {
+        errorElem = document.createElement('div');
+        errorElem.id = errorId;
+        errorElem.className = 'error-text';
+        inputElem.parentNode.appendChild(errorElem);
+      }
+      errorElem.innerText = message;
+    }
+
+    // Remove all existing error messages
+    function clearErrors() {
+      document.querySelectorAll('.error-text').forEach(el => el.remove());
+    }
+
+    // Recalculate and update the preview area
+    function updatePreview() {
+      const m = parseFloat(inputs.monday.value)    || 0;
+      const t = parseFloat(inputs.tuesday.value)   || 0;
+      const w = parseFloat(inputs.wednesday.value) || 0;
+      const th= parseFloat(inputs.thursday.value)  || 0;
+      const f = parseFloat(inputs.friday.value)    || 0;
+      const sa= parseFloat(inputs.saturday.value)  || 0;
+      const su= parseFloat(inputs.sunday.value)    || 0;
+      const r = parseFloat(inputs.rate.value)      || 0;
+
+      const basic = m + t + w + th + f;
+      const total = basic + sa + su;
+      const pay = (basic * r) + (sa * r * 1.5) + (su * r * 1.75);
+
+      totalHoursEl.innerText = total.toFixed(2) + ' hrs';
+      estimatedPayEl.innerText = (r > 0)
+        ? '£' + pay.toFixed(2)
+        : '£0.00';
+    }
+
+    // Front-end validation on form submit
+    form.addEventListener('submit', function(event) {
+      clearErrors();
+      let hasError = false;
+
+      // 1) Week must be Monday
+      if (!isMonday(weekInput.value)) {
+        showError(weekInput, 'Week must start on a Monday.');
+        hasError = true;
       }
 
-      // Utility to show an error message under a given input
-      function showError(inputElem, message) {
-        const errorId = 'error-' + inputElem.id;
-        let errorElem = document.getElementById(errorId);
-        if (!errorElem) {
-          errorElem = document.createElement('div');
-          errorElem.id = errorId;
-          errorElem.className = 'error-text';
-          inputElem.parentNode.appendChild(errorElem);
-        }
-        errorElem.innerText = message;
-      }
-
-      // Remove all existing error messages
-      function clearErrors() {
-        document.querySelectorAll('.error-text').forEach(el => el.remove());
-      }
-
-      // Recalculate and update the preview area
-      function updatePreview() {
-        const m = parseFloat(inputs.monday.value)    || 0;
-        const t = parseFloat(inputs.tuesday.value)   || 0;
-        const w = parseFloat(inputs.wednesday.value) || 0;
-        const th= parseFloat(inputs.thursday.value)  || 0;
-        const f = parseFloat(inputs.friday.value)    || 0;
-        const sa= parseFloat(inputs.saturday.value)  || 0;
-        const su= parseFloat(inputs.sunday.value)    || 0;
-        const r = parseFloat(inputs.rate.value)      || 0;
-
-        const basic = m + t + w + th + f;
-        const total = basic + sa + su;
-        const pay = (basic * r) + (sa * r * 1.5) + (su * r * 1.75);
-
-        totalHoursEl.innerText = total.toFixed(2) + ' hrs';
-        estimatedPayEl.innerText = (r > 0)
-          ? '£' + pay.toFixed(2)
-          : '£0.00';
-      }
-
-      // Front-end validation on form submit
-      form.addEventListener('submit', function(event) {
-        clearErrors();
-        let hasError = false;
-
-        // 1) Week must be Monday
-        if (!isMonday(weekInput.value)) {
-          showError(weekInput, 'Week must start on a Monday.');
+      // 2) Numeric & ≥0 checks
+      const numberFields = [
+        'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
+        'saturday_hours', 'sunday_hours', 'hourly_rate'
+      ];
+      numberFields.forEach(name => {
+        const input = document.getElementById(name);
+        const val = parseFloat(input.value);
+        if (isNaN(val) || val < 0) {
+          showError(input, 'Please enter a non-negative number.');
           hasError = true;
-        }
-
-        // 2) Numeric & ≥0 checks
-        const numberFields = [
-          'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
-          'saturday_hours', 'sunday_hours', 'hourly_rate'
-        ];
-        numberFields.forEach(name => {
-          const input = document.getElementById(name);
-          const val = parseFloat(input.value);
-          if (isNaN(val) || val < 0) {
-            showError(input, 'Please enter a non-negative number.');
-            hasError = true;
-          }
-        });
-
-        // 3) Rate > 0
-        const rateVal = parseFloat(inputs.rate.value);
-        if (rateVal <= 0) {
-          showError(inputs.rate, 'Rate must be greater than £0.');
-          hasError = true;
-        }
-
-        // 4) At least one day >0 hours
-        const hoursValues = [
-          parseFloat(inputs.monday.value)    || 0,
-          parseFloat(inputs.tuesday.value)   || 0,
-          parseFloat(inputs.wednesday.value) || 0,
-          parseFloat(inputs.thursday.value)  || 0,
-          parseFloat(inputs.friday.value)    || 0,
-          parseFloat(inputs.saturday.value)  || 0,
-          parseFloat(inputs.sunday.value)    || 0
-        ];
-        const anyPositive = hoursValues.some(h => h > 0);
-        if (!anyPositive) {
-          showError(inputs.monday, 'At least one day must have hours > 0.');
-          hasError = true;
-        }
-
-        if (hasError) {
-          event.preventDefault();
         }
       });
 
-      // On change of any input, recalc preview
-      Object.values(inputs).forEach(el => {
-        el.addEventListener('input', updatePreview);
-      });
+      // 3) Rate > 0
+      const rateVal = parseFloat(inputs.rate.value);
+      if (rateVal <= 0) {
+        showError(inputs.rate, 'Rate must be greater than £0.');
+        hasError = true;
+      }
 
-      // If week_start changes, check Monday
-      weekInput.addEventListener('change', function() {
-        if (this.value && !isMonday(this.value)) {
-          showError(this, 'Please pick a Monday for the week start.');
-          this.value = '';
-        }
-      });
+      // 4) At least one day > 0 hours
+      const hoursValues = [
+        parseFloat(inputs.monday.value)    || 0,
+        parseFloat(inputs.tuesday.value)   || 0,
+        parseFloat(inputs.wednesday.value) || 0,
+        parseFloat(inputs.thursday.value)  || 0,
+        parseFloat(inputs.friday.value)    || 0,
+        parseFloat(inputs.saturday.value)  || 0,
+        parseFloat(inputs.sunday.value)    || 0
+      ];
+      const anyPositive = hoursValues.some(h => h > 0);
+      if (!anyPositive) {
+        showError(inputs.monday, 'At least one day must have hours > 0.');
+        hasError = true;
+      }
 
-      // Initialize preview immediately
-      updatePreview();
+      if (hasError) {
+        event.preventDefault();
+      }
     });
-  </script>
-</body>
-</html>
+
+    // On change of any input, recalc preview
+    Object.values(inputs).forEach(el => {
+      el.addEventListener('input', updatePreview);
+    });
+
+    // If week_start changes, check it’s Monday
+    weekInput.addEventListener('change', function() {
+      if (this.value && !isMonday(this.value)) {
+        showError(this, 'Please pick a Monday for the week start.');
+        this.value = '';
+      }
+    });
+
+    // Initialize preview immediately
+    updatePreview();
+  });
+</script>
+{% endblock %}
