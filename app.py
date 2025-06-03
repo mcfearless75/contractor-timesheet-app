@@ -1,24 +1,16 @@
-import os
 from flask import Flask, render_template, request, redirect, send_file, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import pandas as pd
 import io
+import os
 
 app = Flask(__name__)
-
-# Use DATABASE_URL for Render (Postgres), else default to local SQLite
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'DATABASE_URL',
-    'sqlite:///timesheets.db'
-)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///timesheets.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# -----------------------
-# 1) Define the database model
-# -----------------------
 class Timesheet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     contractor_name = db.Column(db.String(100), nullable=False)
@@ -39,113 +31,47 @@ class Timesheet(db.Model):
     def __repr__(self):
         return f'<Timesheet {self.contractor_name} ({self.week_start} to {self.week_end})>'
 
-# ── ENSURE TABLES EXIST ON EVERY STARTUP ───────────────────────────────────────
-# Note: This must come after the model is defined, so SQLAlchemy knows about it.
 with app.app_context():
     db.create_all()
-# ────────────────────────────────────────────────────────────────────────────────
 
-# -----------------------
-# 2) Routes: Home / Submit Form
-# -----------------------
-@app.route('/', methods=['GET', 'POST'])
-def submit_timesheet():
-    if request.method == 'POST':
-        try:
-            # 2.1) Grab & validate form data
-            name = request.form.get('contractor_name')
-            client = request.form.get('client')
-            site = request.form.get('site_address')
-
-            if not name or not client or not site:
-                raise ValueError("Name, client, and site address are all required.")
-
-            ws_str = request.form.get('week_start')
-            if not ws_str:
-                raise ValueError("Week start date is missing.")
-            week_start = datetime.strptime(ws_str, '%Y-%m-%d').date()
-            week_end = week_start + timedelta(days=6)
-
-            # 2.2) Individual weekday hours (Mon–Fri)
-            monday    = float(request.form.get('monday')    or 0)
-            tuesday   = float(request.form.get('tuesday')   or 0)
-            wednesday = float(request.form.get('wednesday') or 0)
-            thursday  = float(request.form.get('thursday')  or 0)
-            friday    = float(request.form.get('friday')    or 0)
-
-            basic = monday + tuesday + wednesday + thursday + friday
-
-            # 2.3) Weekend hours
-            sat = float(request.form.get('saturday_hours') or 0)
-            sun = float(request.form.get('sunday_hours')   or 0)
-
-            # 2.4) Hourly rate
-            rate = float(request.form.get('hourly_rate') or 0)
-
-            if rate <= 0:
-                raise ValueError("Hourly rate must be greater than £0.")
-
-            total = basic + sat + sun
-            pay = (basic * rate) + (sat * rate * 1.5) + (sun * rate * 1.75)
-
-            # 2.5) Save to database
-            ts = Timesheet(
-                contractor_name=name,
-                client=client,
-                site_address=site,
-                week_start=week_start,
-                week_end=week_end,
-                basic_hours=basic,
-                saturday_hours=sat,
-                sunday_hours=sun,
-                hourly_rate=rate,
-                total_hours=total,
-                calculated_pay=pay,
-                approved=False
-            )
-            db.session.add(ts)
-            db.session.commit()
-            return redirect(url_for('thank_you'))
-
-        except Exception as err:
-            app.logger.error(f"Error processing form: {err}", exc_info=True)
-            return f"<h2>Oops! {err}</h2><p>Please go back and fix the form.</p>", 400
-
-    return render_template('submit.html')
-
-# -----------------------
-# 3) Simple Thank-You Page
-# -----------------------
-@app.route('/thankyou')
-def thank_you():
-    return "<h2>Thanks! Your timesheet was submitted for approval. 😊</h2>"
-
-# -----------------------
-# 4) Manager Dashboard: View Pending & Approve
-# -----------------------
-@app.route('/dashboard')
-def dashboard():
-    pending = Timesheet.query.filter_by(approved=False).all()
-    return render_template('dashboard.html', timesheets=pending)
-
-@app.route('/approve/<int:ts_id>')
-def approve(ts_id):
-    ts = Timesheet.query.get_or_404(ts_id)
-    ts.approved = True
-    ts.approved_on = datetime.utcnow()
-    db.session.commit()
-    return redirect(url_for('dashboard'))
-
-# -----------------------
-# 5) Export All Approved as Excel
-# -----------------------
 @app.route('/export')
 def export_excel():
+    # 1) Query all approved timesheets
     approved = Timesheet.query.filter_by(approved=True).all()
 
-    data = []
+    if not approved:
+        # If no approved rows, return an empty Excel with both sheets but no data
+        # Build empty DataFrames with the correct columns for each sheet:
+        timesheet_columns = [
+            'Name', 'Client', 'Site Address',
+            'Basic Hours', 'Sat Hours (1.5×)', 'Sun Hours (1.75×)',
+            'Total Hours', 'Rate (£)', 'Calculated Pay (£)',
+            'Date Range', 'File Name', 'Extracted On'
+        ]
+        summary_columns = [
+            'Name',
+            'Basic Hrs for Accounts',
+            'Total Overtime 1.5 Hrs for Accounts',
+            'Overtime 1.75 Hrs for Accounts'
+        ]
+        df_empty_main = pd.DataFrame(columns=timesheet_columns)
+        df_empty_summary = pd.DataFrame(columns=summary_columns)
+
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df_empty_main.to_excel(writer, index=False, sheet_name='Timesheets')
+            df_empty_summary.to_excel(writer, index=False, sheet_name='Accounts Summary')
+        output.seek(0)
+        return send_file(
+            output,
+            download_name="approved_timesheets.xlsx",
+            as_attachment=True
+        )
+
+    # 2) Build the main "Timesheets" DataFrame
+    rows = []
     for t in approved:
-        data.append({
+        rows.append({
             'Name': t.contractor_name,
             'Client': t.client,
             'Site Address': t.site_address,
@@ -156,23 +82,37 @@ def export_excel():
             'Rate (£)': t.hourly_rate,
             'Calculated Pay (£)': t.calculated_pay,
             'Date Range': f"{t.week_start.strftime('%d/%m/%Y')}–{t.week_end.strftime('%d/%m/%Y')}",
-            'Approved On': t.approved_on.strftime('%d/%m/%Y %H:%M'),
+            'File Name': "approved_timesheets.xlsx",  # can be adjusted as needed
+            'Extracted On': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         })
 
-    df = pd.DataFrame(data)
+    df_timesheets = pd.DataFrame(rows)
+
+    # 3) Build the "Accounts Summary" DataFrame by grouping
+    #    Sum up basic_hours, saturday_hours (as 1.5× overtime), and sunday_hours (1.75×)
+    df_for_summary = pd.DataFrame([{
+        'Name': t.contractor_name,
+        'Basic Hrs for Accounts': t.basic_hours,
+        'Total Overtime 1.5 Hrs for Accounts': t.saturday_hours,
+        'Overtime 1.75 Hrs for Accounts': t.sunday_hours
+    } for t in approved])
+
+    df_summary = df_for_summary.groupby('Name', as_index=False).sum()
+
+    # 4) Write both DataFrames to an in-memory Excel file with two sheets
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='Approved Timesheets')
+        # First sheet: full details
+        df_timesheets.to_excel(writer, index=False, sheet_name='Timesheets')
+
+        # Second sheet: accounts summary
+        df_summary.to_excel(writer, index=False, sheet_name='Accounts Summary')
+
     output.seek(0)
 
+    # 5) Send the file to the user
     return send_file(
         output,
         download_name="approved_timesheets.xlsx",
         as_attachment=True
     )
-
-# -----------------------
-# 6) Run the Flask app locally (debug only)
-# -----------------------
-if __name__ == '__main__':
-    app.run(debug=True)
