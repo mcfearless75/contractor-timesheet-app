@@ -1,8 +1,52 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-  <h2>Welcome to the Contractor Timesheet Portal</h2>
-  <p>Please <a href="{{ url_for('login') }}">log in</a> or <a href="{{ url_for('register') }}">register</a> to continue.</p>
+<div class="container mt-5">
+  <div class="text-center">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="PRL Logo" class="mb-4" style="max-width: 120px;">
+    <h1 class="display-5 fw-bold">Welcome to PRL Contractor Timesheets</h1>
+    <p class="lead text-muted">Track hours. Submit timesheets. Get paid — fast and fuss-free.</p>
+  </div>
+
+  <div class="row mt-5 text-center">
+    <div class="col-md-4 mb-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <i class="fas fa-user-clock fa-3x text-primary mb-3"></i>
+          <h5 class="card-title">Submit Your Timesheet</h5>
+          <p class="card-text">Log your hours, weekends, and overtime with our easy-to-use form.</p>
+          <a href="{{ url_for('submit_timesheet') }}" class="btn btn-primary">Submit Now</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <i class="fas fa-lock fa-3x text-success mb-3"></i>
+          <h5 class="card-title">Secure Login</h5>
+          <p class="card-text">Contractors and managers log in securely to access timesheets.</p>
+          <a href="{{ url_for('login') }}" class="btn btn-success">Login</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <i class="fas fa-user-plus fa-3x text-info mb-3"></i>
+          <h5 class="card-title">New Contractor?</h5>
+          <p class="card-text">Register today and start tracking your hours with ease.</p>
+          <a href="{{ url_for('register') }}" class="btn btn-info text-white">Register</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-5">
+    <a href="https://www.prlsitesolutions.co.uk/" class="text-muted" target="_blank">
+      <i class="fas fa-globe"></i> Visit PRL Site Solutions
+    </a>
+  </div>
 </div>
 {% endblock %}
