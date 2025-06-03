@@ -34,7 +34,7 @@
     }
 
     /* --------------------------------------------------------------
-       SIDEBAR (desktop)
+       SIDEBAR (always visible)
     -------------------------------------------------------------- */
     #sidebar {
       position: fixed;
@@ -48,7 +48,7 @@
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      z-index: 100; /* sit under the header */
+      z-index: 100;
     }
     #sidebar .sidebar-header {
       text-align: center;
@@ -97,7 +97,7 @@
     #topbar {
       position: fixed;
       top: 0;
-      left: 0;
+      left: 240px;
       right: 0;
       height: 56px;
       background-color: #fff;
@@ -105,7 +105,7 @@
       display: flex;
       align-items: center;
       padding: 0 1rem;
-      z-index: 200; /* above everything */
+      z-index: 200;
     }
     #topbar .breadcrumb {
       margin-bottom: 0;
@@ -116,39 +116,47 @@
        MAIN CONTENT
     -------------------------------------------------------------- */
     #content {
-      margin-top: 56px;  /* leave space for topbar */
+      margin-top: 56px;                 /* push content below topbar */
+      margin-left: 240px;               /* push content right of sidebar */
       padding: 1rem;
     }
 
-    /* On desktop, push content right to accommodate sidebar */
-    @media (min-width: 768px) {
-      #content {
-        margin-left: 240px;
-        width: calc(100% - 240px);
-      }
-      #mobileSidebarToggle {
-        display: none; /* hide hamburger on desktop */
-      }
-      #sidebar {
-        display: flex;
-      }
-    }
-
-    /* On mobile, hide the fixed sidebar and show hamburger */
+    /* --------------------------------------------------------------
+       RESPONSIVE TWEAKS
+    -------------------------------------------------------------- */
     @media (max-width: 767.98px) {
+      /* On small screens, shrink the sidebar to 100px and abbreviate text */
       #sidebar {
-        display: none;
+        width: 100px;
+      }
+      #sidebar .sidebar-header img {
+        width: 48px; /* slightly smaller on mobile */
+      }
+      #sidebar .sidebar-header h4 {
+        font-size: 0;      /* hide the “Timesheet Portal” text */
+        line-height: 0;    /* ensure no blank space */
+        margin-bottom: 0;
+      }
+      #sidebar .btn-sidebar {
+        width: calc(100% - 1rem); /* 100px - some padding */
+        padding: 0.4rem 0.5rem;
+        font-size: 0.9rem;
+      }
+      #sidebar .btn-sidebar i {
+        margin-right: 0;   /* hide icon spacing so icon stands alone */
+        font-size: 1.2rem; /* slightly larger icon to remain legible */
+      }
+      #sidebar .btn-sidebar span {
+        display: none;     /* hide the textual label, keep only icon */
+      }
+
+      /* Adjust topbar and content */
+      #topbar {
+        left: 100px;      /* match collapsed sidebar width */
       }
       #content {
-        margin-left: 0;
-        width: 100%;
-      }
-      #main-content {
-        margin-top: 56px;
+        margin-left: 100px;
         padding: 0.75rem;
-      }
-      #mobileSidebarToggle {
-        display: inline-block;
       }
     }
 
@@ -170,25 +178,26 @@
   {% block head %}{% endblock %}
 </head>
 <body>
-  <!-- Sidebar (desktop only) -->
-  <nav id="sidebar" class="d-none d-md-flex">
+  <!-- Sidebar -->
+  <nav id="sidebar">
     <div class="sidebar-header">
       <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
       <h4>Timesheet Portal</h4>
     </div>
 
+    <!-- Use <span> inside each button so we can hide text on mobile -->
     <a
       href="{{ url_for('submit_timesheet') }}"
       class="btn-sidebar {% if request.path == '/' %}active{% endif %}"
     >
-      <i class="fas fa-file-alt me-2"></i>Submit Timesheet
+      <i class="fas fa-file-alt"></i> <span>Submit</span>
     </a>
 
     <a
       href="{{ url_for('login') }}"
       class="btn-sidebar {% if request.path == '/login' %}active{% endif %}"
     >
-      <i class="fas fa-user-shield me-2"></i>Manager
+      <i class="fas fa-user-shield"></i> <span>Manager</span>
     </a>
 
     {% if session.get('is_manager') %}
@@ -196,95 +205,25 @@
       href="{{ url_for('dashboard') }}"
       class="btn-sidebar {% if request.path == '/dashboard' %}active{% endif %}"
     >
-      <i class="fas fa-table me-2"></i>Dashboard
+      <i class="fas fa-table"></i> <span>Dashboard</span>
     </a>
     <a
       href="{{ url_for('logout') }}"
       class="btn-sidebar text-danger"
     >
-      <i class="fas fa-sign-out-alt me-2"></i>Log Out
+      <i class="fas fa-sign-out-alt"></i> <span>Log Out</span>
     </a>
     {% endif %}
   </nav>
 
   <!-- Topbar -->
-  <nav id="topbar" class="navbar navbar-expand-lg navbar-light bg-white">
-    <div class="container-fluid px-0">
-      <!-- Mobile hamburger: toggles collapse#mobileSidebar -->
-      <button
-        id="mobileSidebarToggle"
-        class="btn btn-outline-secondary d-md-none me-2"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#mobileSidebar"
-        aria-controls="mobileSidebar"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <i class="fas fa-bars"></i>
-      </button>
-
-      <!-- Logo centered on mobile; hidden on desktop (desktop sees logo in sidebar) -->
-      <div class="d-flex d-md-none align-items-center flex-grow-1">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" style="height:32px; margin-right:8px;">
-        <span class="h5 mb-0">Timesheet Portal</span>
-      </div>
-
-      <!-- Breadcrumb / Page Title -->
-      <nav aria-label="breadcrumb" class="flex-grow-1">
-        <ol class="breadcrumb mb-0">
-          {% block breadcrumb %}{% endblock %}
-        </ol>
-      </nav>
-    </div>
-  </nav>
-
-  <!-- Sidebar (mobile collapse) -->
-  <div class="collapse d-md-none" id="mobileSidebar">
-    <nav class="bg-dark text-white ps-3 pt-3">
-      <div class="sidebar-header">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" style="width:48px; height:auto; margin-bottom:0.5rem;">
-        <h4 class="text-white">Timesheet Portal</h4>
-      </div>
-
-      <a
-        href="{{ url_for('submit_timesheet') }}"
-        class="btn-sidebar {% if request.path == '/' %}active{% endif %}"
-        data-bs-toggle="collapse"
-        data-bs-target="#mobileSidebar"
-      >
-        <i class="fas fa-file-alt me-2"></i>Submit Timesheet
-      </a>
-
-      <a
-        href="{{ url_for('login') }}"
-        class="btn-sidebar {% if request.path == '/login' %}active{% endif %}"
-        data-bs-toggle="collapse"
-        data-bs-target="#mobileSidebar"
-      >
-        <i class="fas fa-user-shield me-2"></i>Manager
-      </a>
-
-      {% if session.get('is_manager') %}
-      <a
-        href="{{ url_for('dashboard') }}"
-        class="btn-sidebar {% if request.path == '/dashboard' %}active{% endif %}"
-        data-bs-toggle="collapse"
-        data-bs-target="#mobileSidebar"
-      >
-        <i class="fas fa-table me-2"></i>Dashboard
-      </a>
-      <a
-        href="{{ url_for('logout') }}"
-        class="btn-sidebar text-danger"
-        data-bs-toggle="collapse"
-        data-bs-target="#mobileSidebar"
-      >
-        <i class="fas fa-sign-out-alt me-2"></i>Log Out
-      </a>
-      {% endif %}
+  <nav id="topbar" class="d-flex align-items-center">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        {% block breadcrumb %}{% endblock %}
+      </ol>
     </nav>
-  </div>
+  </nav>
 
   <!-- Main Content Area -->
   <div id="content">
