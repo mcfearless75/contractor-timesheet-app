@@ -60,17 +60,30 @@
       margin: 0;
       color: #fff;
     }
-    #sidebar .nav-link {
-      color: #adb5bd;
-      padding: 0.75rem 1.25rem;
+
+    /* Make our sidebar “buttons” sit full-width, raised, and spaced */
+    #sidebar .btn-sidebar {
+      width: 100%;
+      text-align: left;
+      color: #343a40;
+      background-color: #f8f9fa;
+      border: none;
+      border-radius: 0.375rem;
+      padding: 0.5rem 1rem;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+      font-weight: 500;
     }
-    #sidebar .nav-link:hover {
-      background-color: #495057;
-      color: #fff;
+    #sidebar .btn-sidebar:hover {
+      background-color: #e2e6ea;
+      color: #343a40;
+      box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
     }
-    #sidebar .nav-link.active {
+    /* Active state */
+    #sidebar .btn-sidebar.active {
       background-color: #007bff;
       color: #fff;
+      box-shadow: 0 0.25rem 0.5rem rgba(0, 123, 255, 0.4);
     }
 
     /* --------------------------------------------------------------
@@ -144,35 +157,45 @@
 </head>
 <body>
   <!-- Sidebar -->
-  <nav id="sidebar" class="d-flex flex-column">
+  <nav id="sidebar" class="d-flex flex-column align-items-center">
     <div class="sidebar-header">
       <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
       <h4>Timesheet Portal</h4>
     </div>
-    <ul class="nav flex-column">
-      <li class="nav-item">
-        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('submit_timesheet') }}">
-          <i class="fas fa-file-alt me-2"></i>Submit Timesheet
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link {% if request.path == '/login' %}active{% endif %}" href="{{ url_for('login') }}">
-          <i class="fas fa-user-shield me-2"></i>Manager
-        </a>
-      </li>
+    <div class="d-flex flex-column w-100 px-2">
+      <!-- Submit Timesheet Button -->
+      <a
+        href="{{ url_for('submit_timesheet') }}"
+        class="btn-sidebar {% if request.path == '/' %}active{% endif %}"
+      >
+        <i class="fas fa-file-alt me-2"></i>Submit Timesheet
+      </a>
+
+      <!-- Manager Login Button (always visible) -->
+      <a
+        href="{{ url_for('login') }}"
+        class="btn-sidebar {% if request.path == '/login' %}active{% endif %}"
+      >
+        <i class="fas fa-user-shield me-2"></i>Manager
+      </a>
+
       {% if session.get('is_manager') %}
-      <li class="nav-item">
-        <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
-          <i class="fas fa-table me-2"></i>Dashboard
-        </a>
-      </li>
-      <li class="nav-item mt-3">
-        <a class="nav-link text-danger" href="{{ url_for('logout') }}">
-          <i class="fas fa-sign-out-alt me-2"></i>Log Out
-        </a>
-      </li>
+      <!-- Dashboard (only for managers) -->
+      <a
+        href="{{ url_for('dashboard') }}"
+        class="btn-sidebar {% if request.path == '/dashboard' %}active{% endif %}"
+      >
+        <i class="fas fa-table me-2"></i>Dashboard
+      </a>
+      <!-- Log Out (only for managers) -->
+      <a
+        href="{{ url_for('logout') }}"
+        class="btn-sidebar text-danger"
+      >
+        <i class="fas fa-sign-out-alt me-2"></i>Log Out
+      </a>
       {% endif %}
-    </ul>
+    </div>
   </nav>
 
   <!-- Page Content -->
