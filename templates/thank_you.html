@@ -1,29 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Thank You!{% endblock %}
-
 {% block content %}
-<div class="d-flex justify-content-center align-items-center" style="height: 70vh;">
-  <div class="text-center">
-    <!-- Small logo at the top -->
-    <img 
-      src="{{ url_for('static', filename='logo.png') }}" 
-      alt="Logo" 
-      style="width: 80px; height: auto; margin-bottom: 1rem;"
-    >
-    <h2>Thanks! Your timesheet was submitted successfully. 😊</h2>
-    <p class="mt-3">
-      <a href="{{ url_for('submit_timesheet') }}" class="btn btn-primary me-2">Submit Another</a>
-      {% if current_user.role == 'manager' %}
-      <a href="{{ url_for('dashboard') }}" class="btn btn-secondary me-2">Go to Dashboard</a>
-      {% endif %}
-    </p>
-    <!-- Link to PRL website -->
-    <p class="mt-4">
-      Learn more at 
-      <a href="https://www.prlsitesolutions.co.uk/" target="_blank" class="text-decoration-none">
-        PRL Site Solutions
-      </a>
-    </p>
-  </div>
+<div class="container d-flex flex-column justify-content-center align-items-center vh-100 text-center">
+  <img src="{{ url_for('static', filename='logo.png') }}" alt="PRL Logo" style="width: 100px; margin-bottom: 20px;">
+  <h2 class="mb-3">Thank you for submitting your timesheet!</h2>
+  <p>We'll be in touch if anything is missing or needs clarification.</p>
+  <a href="https://www.prlsitesolutions.co.uk/" class="btn btn-outline-primary mt-3" target="_blank">
+    Visit PRL Site Solutions
+  </a>
 </div>
 {% endblock %}
