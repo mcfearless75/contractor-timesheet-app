@@ -11,8 +11,11 @@
 <div class="container-fluid">
   <div class="row justify-content-center">
     <div class="col-xl-8 col-lg-10">
-      <div class="card mb-4">
-        <div class="card-header">Submit Your Timesheet</div>
+      <!-- Card wrapper to make the form “pop” -->
+      <div class="card shadow-sm mb-5">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Submit Your Timesheet</h4>
+        </div>
         <div class="card-body">
           <form id="timesheetForm" method="POST" action="/">
             <div class="row g-3">
@@ -49,7 +52,7 @@
             </div>
 
             <div class="row g-3 mt-3">
-              <!-- Site Address -->
+              <!-- Site Address (full width) -->
               <div class="col-12">
                 <div class="form-floating">
                   <input
@@ -75,6 +78,7 @@
                     class="form-control"
                     id="week_start"
                     name="week_start"
+                    placeholder="Week Starting (Monday)"
                     required
                   >
                   <label for="week_start">Week Starting (Monday)</label>
@@ -102,7 +106,7 @@
             </div>
 
             <!-- Hours Grid -->
-            <div class="row g-3 mt-3">
+            <div class="row g-3 mt-4">
               <div class="col-12">
                 <label class="form-label fw-semibold">Enter Hours Worked (Mon–Sun)</label>
               </div>
@@ -235,12 +239,12 @@
             </div>
 
             <!-- Live Preview Section -->
-            <div class="preview mt-4">
+            <div class="preview mt-4 p-3 bg-light rounded">
               <p>Total Hours: <span id="totalHoursPreview">0.00 hrs</span></p>
               <p>Estimated Pay: <span id="estimatedPayPreview">£0.00</span></p>
             </div>
 
-            <!-- Submit Button -->
+            <!-- Submit Button: full width, spaced below -->
             <div class="d-grid mt-4">
               <button type="submit" class="btn btn-primary btn-lg">Submit for Approval</button>
             </div>
@@ -280,7 +284,7 @@
       return d.getDay() === 1; // 1 = Monday
     }
 
-    // Utility to show an error message under a given input
+    // Show an error message under a given input
     function showError(inputElem, message) {
       const errorId = 'error-' + inputElem.id;
       let errorElem = document.getElementById(errorId);
@@ -293,7 +297,7 @@
       errorElem.innerText = message;
     }
 
-    // Remove all existing error messages
+    // Clear all existing error messages
     function clearErrors() {
       document.querySelectorAll('.error-text').forEach(el => el.remove());
     }
@@ -377,7 +381,7 @@
       el.addEventListener('input', updatePreview);
     });
 
-    // If week_start changes, check it’s Monday
+    // If week_start changes, ensure it’s Monday
     weekInput.addEventListener('change', function() {
       if (this.value && !isMonday(this.value)) {
         showError(this, 'Please pick a Monday for the week start.');
