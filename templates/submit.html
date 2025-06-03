@@ -1,371 +1,80 @@
-{% extends "base.html" %}
-{% block title %}Submit Timesheet{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
-<div class="container-fluid">
-  <div class="row justify-content-center">
-    <div class="col-xl-8 col-lg-10">
-      <div class="card shadow-sm mb-5">
-        <div class="card-header bg-white">
-          <h4 class="mb-0">Submit Your Timesheet</h4>
+<div class="container mt-4">
+    <h2 class="mb-4 text-primary">Submit Timesheet</h2>
+    <form method="POST" action="{{ url_for('submit_timesheet') }}" class="bg-light p-4 rounded shadow-sm">
+        <div class="mb-3">
+            <label for="client" class="form-label">Client</label>
+            <input type="text" class="form-control" id="client" name="client" required>
         </div>
-        <div class="card-body">
-          <form id="timesheetForm" method="POST" action="{{ url_for('submit_timesheet') }}">
-            <div class="row g-3">
-              <!-- Client -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="client"
-                    name="client"
-                    placeholder="Client"
-                    required
-                  >
-                  <label for="client">Client</label>
-                  <div class="error-text" id="error-client"></div>
-                </div>
-              </div>
-              <!-- Site Address -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="site_address"
-                    name="site_address"
-                    placeholder="Site Address"
-                    required
-                  >
-                  <label for="site_address">Site Address</label>
-                  <div class="error-text" id="error-site_address"></div>
-                </div>
-              </div>
-            </div>
 
-            <div class="row g-3 mt-3">
-              <!-- Week Start Date -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input
-                    type="date"
-                    class="form-control"
-                    id="week_start"
-                    name="week_start"
-                    placeholder="Week Starting (Monday)"
-                    required
-                  >
-                  <label for="week_start">Week Starting (Monday)</label>
-                  <div class="error-text" id="error-week_start"></div>
-                </div>
-              </div>
-              <!-- Hourly Rate -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input
-                    type="number"
-                    class="form-control"
-                    step="0.01"
-                    min="0"
-                    id="hourly_rate"
-                    name="hourly_rate"
-                    value="0"
-                    placeholder="Rate (£)"
-                    required
-                  >
-                  <label for="hourly_rate">Hourly Rate (£)</label>
-                  <div class="error-text" id="error-hourly_rate"></div>
-                </div>
-              </div>
-            </div>
+        <div class="mb-3">
+            <label for="site_address" class="form-label">Site Address</label>
+            <input type="text" class="form-control" id="site_address" name="site_address" required>
+        </div>
 
-            <!-- Hours Grid -->
-            <div class="row g-3 mt-4">
-              <div class="col-12">
-                <label class="form-label fw-semibold">Enter Hours Worked (Mon–Sun)</label>
-              </div>
-              <!-- Monday -->
-              <div class="col-sm-6 col-md-4">
-                <div class="form-floating">
-                  <input
-                    type="number"
-                    class="form-control"
-                    step="0.25"
-                    min="0"
-                    id="monday"
-                    name="monday"
-                    value="0"
-                    placeholder="Monday"
-                    required
-                  >
-                  <label for="monday">Monday</label>
-                  <div class="error-text" id="error-monday"></div>
-                </div>
-              </div>
-              <!-- Tuesday -->
-              <div class="col-sm-6 col-md-4">
-                <div class="form-floating">
-                  <input
-                    type="number"
-                    class="form-control"
-                    step="0.25"
-                    min="0"
-                    id="tuesday"
-                    name="tuesday"
-                    value="0"
-                    placeholder="Tuesday"
-                    required
-                  >
-                  <label for="tuesday">Tuesday</label>
-                  <div class="error-text" id="error-tuesday"></div>
-                </div>
-              </div>
-              <!-- Wednesday -->
-              <div class="col-sm-6 col-md-4">
-                <div class="form-floating">
-                  <input
-                    type="number"
-                    class="form-control"
-                    step="0.25"
-                    min="0"
-                    id="wednesday"
-                    name="wednesday"
-                    value="0"
-                    placeholder="Wednesday"
-                    required
-                  >
-                  <label for="wednesday">Wednesday</label>
-                  <div class="error-text" id="error-wednesday"></div>
-                </div>
-              </div>
-              <!-- Thursday -->
-              <div class="col-sm-6 col-md-4">
-                <div class="form-floating">
-                  <input
-                    type="number"
-                    class="form-control"
-                    step="0.25"
-                    min="0"
-                    id="thursday"
-                    name="thursday"
-                    value="0"
-                    placeholder="Thursday"
-                    required
-                  >
-                  <label for="thursday">Thursday</label>
-                  <div class="error-text" id="error-thursday"></div>
-                </div>
-              </div>
-              <!-- Friday -->
-              <div class="col-sm-6 col-md-4">
-                <div class="form-floating">
-                  <input
-                    type="number"
-                    class="form-control"
-                    step="0.25"
-                    min="0"
-                    id="friday"
-                    name="friday"
-                    value="0"
-                    placeholder="Friday"
-                    required
-                  >
-                  <label for="friday">Friday</label>
-                  <div class="error-text" id="error-friday"></div>
-                </div>
-              </div>
-              <!-- Saturday -->
-              <div class="col-sm-6 col-md-4">
-                <div class="form-floating">
-                  <input
-                    type="number"
-                    class="form-control"
-                    step="0.25"
-                    min="0"
-                    id="saturday_hours"
-                    name="saturday_hours"
-                    value="0"
-                    placeholder="Saturday"
-                    required
-                  >
-                  <label for="saturday_hours">Saturday (1.5×)</label>
-                  <div class="error-text" id="error-saturday_hours"></div>
-                </div>
-              </div>
-              <!-- Sunday -->
-              <div class="col-sm-6 col-md-4">
-                <div class="form-floating">
-                  <input
-                    type="number"
-                    class="form-control"
-                    step="0.25"
-                    min="0"
-                    id="sunday_hours"
-                    name="sunday_hours"
-                    value="0"
-                    placeholder="Sunday"
-                    required
-                  >
-                  <label for="sunday_hours">Sunday (1.75×)</label>
-                  <div class="error-text" id="error-sunday_hours"></div>
-                </div>
-              </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="week_start" class="form-label">Week Start</label>
+                <input type="date" class="form-control" id="week_start" name="week_start" required>
             </div>
-
-            <!-- Live Preview Section -->
-            <div class="preview mt-4 p-3 bg-light rounded">
-              <p>Total Hours: <span id="totalHoursPreview">0.00 hrs</span></p>
-              <p>Estimated Pay: <span id="estimatedPayPreview">£0.00</span></p>
+            <div class="col-md-6 mb-3">
+                <label for="week_end" class="form-label">Week End</label>
+                <input type="date" class="form-control" id="week_end" name="week_end" required>
             </div>
+        </div>
 
-            <!-- Submit Button: full width, spaced below -->
-            <div class="d-grid mt-4">
-              <button type="submit" class="btn btn-primary btn-lg">Submit for Approval</button>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="basic_hours" class="form-label">Basic Hours</label>
+                <input type="number" class="form-control" id="basic_hours" name="basic_hours" step="0.1" required>
             </div>
-          </form>
-        </div> <!-- .card-body -->
-      </div> <!-- .card -->
-    </div> <!-- .col -->
-  </div> <!-- .row -->
-</div> <!-- .container-fluid -->
-{% endblock %}
+            <div class="col-md-4 mb-3">
+                <label for="saturday_hours" class="form-label">Saturday Hours</label>
+                <input type="number" class="form-control" id="saturday_hours" name="saturday_hours" step="0.1" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="sunday_hours" class="form-label">Sunday Hours</label>
+                <input type="number" class="form-control" id="sunday_hours" name="sunday_hours" step="0.1" required>
+            </div>
+        </div>
 
-{% block scripts %}
+        <div class="mb-3">
+            <label for="hourly_rate" class="form-label">Hourly Rate (£)</label>
+            <input type="number" class="form-control" id="hourly_rate" name="hourly_rate" step="0.01" required>
+        </div>
+
+        <div class="alert alert-info mt-3">
+            <strong>Total Hours:</strong> <span id="total_hours">0</span><br>
+            <strong>Estimated Pay (£):</strong> <span id="total_pay">0.00</span>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-lg mt-2 w-100">Submit Timesheet</button>
+    </form>
+</div>
+
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('timesheetForm');
-    const weekInput = document.getElementById('week_start');
+    document.addEventListener('DOMContentLoaded', function () {
+        function calculatePay() {
+            const bh = parseFloat(document.getElementById("basic_hours").value) || 0;
+            const sh = parseFloat(document.getElementById("saturday_hours").value) || 0;
+            const suh = parseFloat(document.getElementById("sunday_hours").value) || 0;
+            const rate = parseFloat(document.getElementById("hourly_rate").value) || 0;
 
-    // Grab all hour inputs and rate input
-    const inputs = {
-      monday:    document.getElementById('monday'),
-      tuesday:   document.getElementById('tuesday'),
-      wednesday: document.getElementById('wednesday'),
-      thursday:  document.getElementById('thursday'),
-      friday:    document.getElementById('friday'),
-      saturday:  document.getElementById('saturday_hours'),
-      sunday:    document.getElementById('sunday_hours'),
-      rate:      document.getElementById('hourly_rate')
-    };
+            const totalHours = bh + sh + suh;
+            const totalPay = bh * rate + sh * rate * 1.5 + suh * rate * 1.75;
 
-    // Preview spans
-    const totalHoursEl = document.getElementById('totalHoursPreview');
-    const estimatedPayEl = document.getElementById('estimatedPayPreview');
-
-    // Utility: check if a date is Monday
-    function isMonday(dateString) {
-      const d = new Date(dateString);
-      return d.getDay() === 1; // 1 = Monday
-    }
-
-    // Show an error message under a given input
-    function showError(inputElem, message) {
-      const errorId = 'error-' + inputElem.id;
-      let errorElem = document.getElementById(errorId);
-      if (!errorElem) {
-        errorElem = document.createElement('div');
-        errorElem.id = errorId;
-        errorElem.className = 'error-text';
-        inputElem.parentNode.appendChild(errorElem);
-      }
-      errorElem.innerText = message;
-    }
-
-    // Clear all existing error messages
-    function clearErrors() {
-      document.querySelectorAll('.error-text').forEach(el => el.remove());
-    }
-
-    // Recalculate and update the preview area
-    function updatePreview() {
-      const m = parseFloat(inputs.monday.value)    || 0;
-      const t = parseFloat(inputs.tuesday.value)   || 0;
-      const w = parseFloat(inputs.wednesday.value) || 0;
-      const th= parseFloat(inputs.thursday.value)  || 0;
-      const f = parseFloat(inputs.friday.value)    || 0;
-      const sa= parseFloat(inputs.saturday.value)  || 0;
-      const su= parseFloat(inputs.sunday.value)    || 0;
-      const r = parseFloat(inputs.rate.value)      || 0;
-
-      const basic = m + t + w + th + f;
-      const total = basic + sa + su;
-      const pay = (basic * r) + (sa * r * 1.5) + (su * r * 1.75);
-
-      totalHoursEl.innerText = total.toFixed(2) + ' hrs';
-      estimatedPayEl.innerText = (r > 0)
-        ? '£' + pay.toFixed(2)
-        : '£0.00';
-    }
-
-    // Front-end validation on form submit
-    form.addEventListener('submit', function(event) {
-      clearErrors();
-      let hasError = false;
-
-      // 1) Week must be Monday
-      if (!isMonday(weekInput.value)) {
-        showError(weekInput, 'Week must start on a Monday.');
-        hasError = true;
-      }
-
-      // 2) Numeric & ≥0 checks
-      const numberFields = [
-        'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
-        'saturday_hours', 'sunday_hours', 'hourly_rate'
-      ];
-      numberFields.forEach(name => {
-        const input = document.getElementById(name);
-        const val = parseFloat(input.value);
-        if (isNaN(val) || val < 0) {
-          showError(input, 'Please enter a non-negative number.');
-          hasError = true;
+            document.getElementById("total_hours").textContent = totalHours.toFixed(1);
+            document.getElementById("total_pay").textContent = totalPay.toFixed(2);
         }
-      });
 
-      // 3) Rate > 0
-      const rateVal = parseFloat(inputs.rate.value);
-      if (rateVal <= 0) {
-        showError(inputs.rate, 'Rate must be greater than £0.');
-        hasError = true;
-      }
+        ["basic_hours", "saturday_hours", "sunday_hours", "hourly_rate"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener("input", calculatePay);
+        });
 
-      // 4) At least one day > 0 hours
-      const hoursValues = [
-        parseFloat(inputs.monday.value)    || 0,
-        parseFloat(inputs.tuesday.value)   || 0,
-        parseFloat(inputs.wednesday.value) || 0,
-        parseFloat(inputs.thursday.value)  || 0,
-        parseFloat(inputs.friday.value)    || 0,
-        parseFloat(inputs.saturday.value)  || 0,
-        parseFloat(inputs.sunday.value)    || 0
-      ];
-      const anyPositive = hoursValues.some(h => h > 0);
-      if (!anyPositive) {
-        showError(inputs.monday, 'At least one day must have hours > 0.');
-        hasError = true;
-      }
-
-      if (hasError) {
-        event.preventDefault();
-      }
+        calculatePay();
     });
-
-    // On change of any input, recalc preview
-    Object.values(inputs).forEach(el => {
-      el.addEventListener('input', updatePreview);
-    });
-
-    // If week_start changes, ensure it’s Monday
-    weekInput.addEventListener('change', function() {
-      if (this.value && !isMonday(this.value)) {
-        showError(this, 'Please pick a Monday for the week start.');
-        this.value = '';
-      }
-    });
-
-    // Initialize preview immediately
-    updatePreview();
-  });
 </script>
 {% endblock %}

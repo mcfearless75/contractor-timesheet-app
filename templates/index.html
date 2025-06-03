@@ -1,8 +1,48 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
 {% block title %}Home{% endblock %}
+
 {% block content %}
-<div class="text-center">
-    <h1>Welcome to the Contractor Timesheet System</h1>
-    <p class="lead">Please login or register to continue.</p>
+<!-- Hero Section -->
+<div class="container text-center mt-5 fade-in">
+    <h1 class="display-4 mb-3">Welcome to the Contractor Timesheet Portal</h1>
+    <p class="lead">Submit your hours, stay on top, and get paid — on time, every time.</p>
+
+    <!-- Buttons -->
+    <div class="d-flex flex-column align-items-center gap-3 mt-4">
+        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg shadow">
+            <i class="bi bi-box-arrow-in-right me-2"></i> Contractor Login
+        </a>
+        <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg shadow">
+            <i class="bi bi-person-plus me-2"></i> Register as Contractor
+        </a>
+        <a href="{{ url_for('login') }}" class="btn btn-warning btn-lg shadow">
+            <i class="bi bi-person-lock me-2"></i> Manager Login
+        </a>
+    </div>
 </div>
+
+<!-- Timmy the Timesheet Turtle -->
+<div class="container text-center mt-5 fade-in-slow">
+    <img src="https://cdn.pixabay.com/photo/2014/04/02/10/50/turtle-304396_960_720.png"
+         alt="Timmy the Timesheet Turtle"
+         style="max-width: 120px;">
+    <p class="mt-2 mb-0 text-muted">Meet Timmy the Timesheet Turtle 🐢 — always on time, never forgets a deadline!</p>
+</div>
+
+<!-- Custom CSS -->
+<style>
+    .fade-in {
+        animation: fadeIn 1s ease-in;
+    }
+
+    .fade-in-slow {
+        animation: fadeIn 2.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
 {% endblock %}
