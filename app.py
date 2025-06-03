@@ -50,6 +50,15 @@ def load_user(user_id):
 
 # ------------------------ Routes ------------------------
 
+@app.route('/delete-db')
+def delete_db():
+    import os
+    try:
+        os.remove("timesheets.db")
+        return "✅ Database deleted. Now visit /initdb to recreate it."
+    except Exception as e:
+        return f"❌ Error deleting DB: {str(e)}"
+
 @app.route('/')
 def home():
     return render_template('index.html')
