@@ -97,6 +97,15 @@ def login():
         flash('Invalid credentials.', 'danger')
     return render_template('login.html')
 
+@app.route('/create_manager')
+def create_manager():
+    from werkzeug.security import generate_password_hash
+    hashed_pw = generate_password_hash("admin123")
+    manager = User(username="admin", email="admin@example.com", password=hashed_pw, role="manager")
+    db.session.add(manager)
+    db.session.commit()
+    return "✅ Manager user created!"
+
 @app.route('/logout')
 @login_required
 def logout():
