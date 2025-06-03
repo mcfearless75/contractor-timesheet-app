@@ -7,8 +7,11 @@ import io
 
 app = Flask(__name__)
 
-# Use DATABASE_URL from environment (Render) or fall back to local SQLite
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///timesheets.db')
+# Use DATABASE_URL for Render (Postgres), else default to local SQLite
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL',
+    'sqlite:///timesheets.db'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -36,61 +39,77 @@ class Timesheet(db.Model):
     def __repr__(self):
         return f'<Timesheet {self.contractor_name} ({self.week_start} to {self.week_end})>'
 
+# ── ENSURE TABLES EXIST ON EVERY STARTUP ───────────────────────────────────────
+# Note: This must come after the model is defined, so SQLAlchemy knows about it.
+with app.app_context():
+    db.create_all()
+# ────────────────────────────────────────────────────────────────────────────────
+
 # -----------------------
 # 2) Routes: Home / Submit Form
 # -----------------------
 @app.route('/', methods=['GET', 'POST'])
 def submit_timesheet():
     if request.method == 'POST':
-        # Grab form data
-        name = request.form.get('contractor_name')
-        client = request.form.get('client')
-        site = request.form.get('site_address')
+        try:
+            # 2.1) Grab & validate form data
+            name = request.form.get('contractor_name')
+            client = request.form.get('client')
+            site = request.form.get('site_address')
 
-        # week_start as a date, must be a Monday (frontend JS warns if not)
-        week_start = datetime.strptime(request.form.get('week_start'), '%Y-%m-%d').date()
-        # week_end = week_start + 6 days
-        week_end = week_start + timedelta(days=6)
+            if not name or not client or not site:
+                raise ValueError("Name, client, and site address are all required.")
 
-        # Individual weekday hours (Mon–Fri)
-        monday    = float(request.form.get('monday')    or 0)
-        tuesday   = float(request.form.get('tuesday')   or 0)
-        wednesday = float(request.form.get('wednesday') or 0)
-        thursday  = float(request.form.get('thursday')  or 0)
-        friday    = float(request.form.get('friday')    or 0)
+            ws_str = request.form.get('week_start')
+            if not ws_str:
+                raise ValueError("Week start date is missing.")
+            week_start = datetime.strptime(ws_str, '%Y-%m-%d').date()
+            week_end = week_start + timedelta(days=6)
 
-        # Aggregate basic_hours
-        basic = monday + tuesday + wednesday + thursday + friday
+            # 2.2) Individual weekday hours (Mon–Fri)
+            monday    = float(request.form.get('monday')    or 0)
+            tuesday   = float(request.form.get('tuesday')   or 0)
+            wednesday = float(request.form.get('wednesday') or 0)
+            thursday  = float(request.form.get('thursday')  or 0)
+            friday    = float(request.form.get('friday')    or 0)
 
-        # Weekend hours
-        sat = float(request.form.get('saturday_hours') or 0)
-        sun = float(request.form.get('sunday_hours')   or 0)
+            basic = monday + tuesday + wednesday + thursday + friday
 
-        # Hourly rate
-        rate = float(request.form.get('hourly_rate') or 0)
+            # 2.3) Weekend hours
+            sat = float(request.form.get('saturday_hours') or 0)
+            sun = float(request.form.get('sunday_hours')   or 0)
 
-        # Compute totals
-        total = basic + sat + sun
-        pay = (basic * rate) + (sat * rate * 1.5) + (sun * rate * 1.75)
+            # 2.4) Hourly rate
+            rate = float(request.form.get('hourly_rate') or 0)
 
-        # Create a new Timesheet record
-        ts = Timesheet(
-            contractor_name=name,
-            client=client,
-            site_address=site,
-            week_start=week_start,
-            week_end=week_end,
-            basic_hours=basic,
-            saturday_hours=sat,
-            sunday_hours=sun,
-            hourly_rate=rate,
-            total_hours=total,
-            calculated_pay=pay,
-            approved=False
-        )
-        db.session.add(ts)
-        db.session.commit()
-        return redirect(url_for('thank_you'))
+            if rate <= 0:
+                raise ValueError("Hourly rate must be greater than £0.")
+
+            total = basic + sat + sun
+            pay = (basic * rate) + (sat * rate * 1.5) + (sun * rate * 1.75)
+
+            # 2.5) Save to database
+            ts = Timesheet(
+                contractor_name=name,
+                client=client,
+                site_address=site,
+                week_start=week_start,
+                week_end=week_end,
+                basic_hours=basic,
+                saturday_hours=sat,
+                sunday_hours=sun,
+                hourly_rate=rate,
+                total_hours=total,
+                calculated_pay=pay,
+                approved=False
+            )
+            db.session.add(ts)
+            db.session.commit()
+            return redirect(url_for('thank_you'))
+
+        except Exception as err:
+            app.logger.error(f"Error processing form: {err}", exc_info=True)
+            return f"<h2>Oops! {err}</h2><p>Please go back and fix the form.</p>", 400
 
     return render_template('submit.html')
 
@@ -124,7 +143,6 @@ def approve(ts_id):
 def export_excel():
     approved = Timesheet.query.filter_by(approved=True).all()
 
-    # Build a list of dicts for pandas
     data = []
     for t in approved:
         data.append({
@@ -142,7 +160,6 @@ def export_excel():
         })
 
     df = pd.DataFrame(data)
-    # Use an in-memory buffer to avoid writing to disk
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Approved Timesheets')
@@ -155,12 +172,7 @@ def export_excel():
     )
 
 # -----------------------
-# 6) Run the Flask app (and create DB if it doesn’t exist)
+# 6) Run the Flask app locally (debug only)
 # -----------------------
 if __name__ == '__main__':
-    # Ensure the tables are created before first request
-    with app.app_context():
-        db.create_all()
-
-    # Start Flask’s development server
     app.run(debug=True)
