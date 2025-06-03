@@ -20,6 +20,26 @@ login_manager.login_view = 'login'
 
 # ------------------------ Models ------------------------
 
+@app.route('/admin/users', methods=['GET', 'POST'])
+@login_required
+def manage_users():
+    if current_user.role != 'manager':
+        return "Access denied", 403
+
+    if request.method == 'POST':
+        user_id = request.form.get('delete_user_id')
+        if user_id:
+            user = User.query.get(int(user_id))
+            if user and user.username != current_user.username:
+                db.session.delete(user)
+                db.session.commit()
+                flash(f"User '{user.username}' deleted.", 'success')
+            else:
+                flash("Cannot delete yourself or unknown user.", 'danger')
+
+    users = User.query.all()
+    return render_template('admin_users.html', users=users)
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -55,6 +75,30 @@ def load_user(user_id):
 @app.route('/')
 def home():
     return render_template('index.html')
+
+
+@app.route('/admin/reset_password/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def reset_password(user_id):
+    if current_user.role != 'manager':
+        return "Access denied", 403
+
+    user = User.query.get_or_404(user_id)
+
+    if request.method == 'POST':
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if new_password != confirm_password:
+            flash("Passwords do not match.", "danger")
+            return redirect(request.url)
+
+        user.password = generate_password_hash(new_password)
+        db.session.commit()
+        flash(f"Password reset for '{user.username}' successful.", "success")
+        return redirect(url_for('manage_users'))
+
+    return render_template('reset_password.html', user=user)
 
 
 @app.route('/register', methods=['GET', 'POST'])

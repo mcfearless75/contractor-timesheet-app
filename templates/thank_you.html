@@ -1,11 +1,9 @@
 {% extends "base.html" %}
+{% block title %}Thank You{% endblock %}
 {% block content %}
-<div class="container d-flex flex-column justify-content-center align-items-center vh-100 text-center">
-  <img src="{{ url_for('static', filename='logo.png') }}" alt="PRL Logo" style="width: 100px; margin-bottom: 20px;">
-  <h2 class="mb-3">Thank you for submitting your timesheet!</h2>
-  <p>We'll be in touch if anything is missing or needs clarification.</p>
-  <a href="https://www.prlsitesolutions.co.uk/" class="btn btn-outline-primary mt-3" target="_blank">
-    Visit PRL Site Solutions
-  </a>
+<div class="text-center">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" style="width: 100px;">
+    <h3>Thank you for your submission!</h3>
+    <p>Visit <a href="https://www.prlsitesolutions.co.uk/" target="_blank">PRL Site Solutions</a></p>
 </div>
 {% endblock %}
