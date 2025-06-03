@@ -13,7 +13,7 @@
     crossorigin="anonymous"
   />
 
-  <!-- Font Awesome for sidebar icons -->
+  <!-- Font Awesome for icons -->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css"
@@ -34,9 +34,9 @@
     }
 
     /* --------------------------------------------------------------
-       SIDEBAR
+       DESKTOP SIDEBAR (show for md and up)
     -------------------------------------------------------------- */
-    #sidebar {
+    #sidebar-desktop {
       height: 100vh;
       background-color: #343a40;
       color: #fff;
@@ -49,23 +49,21 @@
       flex-direction: column;
       align-items: stretch;
     }
-    #sidebar .sidebar-header {
+    #sidebar-desktop .sidebar-header {
       text-align: center;
       margin-bottom: 1rem;
     }
-    #sidebar .sidebar-header img {
+    #sidebar-desktop .sidebar-header img {
       width: 60px;
       height: auto;
       margin-bottom: 0.5rem;
     }
-    #sidebar .sidebar-header h4 {
+    #sidebar-desktop .sidebar-header h4 {
       font-size: 1.1rem;
       margin: 0;
       color: #fff;
     }
-
-    /* Adjusted “raised button” style so it fits inside 240px */
-    #sidebar .btn-sidebar {
+    #sidebar-desktop .btn-sidebar {
       display: block;
       width: calc(100% - 1.5rem);
       margin: 0.5rem 0;
@@ -83,12 +81,58 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    #sidebar .btn-sidebar:hover {
+    #sidebar-desktop .btn-sidebar:hover {
       background-color: #e2e6ea;
       color: #343a40;
       box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
     }
-    #sidebar .btn-sidebar.active {
+    #sidebar-desktop .btn-sidebar.active {
+      background-color: #007bff;
+      color: #fff;
+      box-shadow: 0 0.25rem 0.5rem rgba(0, 123, 255, 0.4);
+    }
+
+    /* --------------------------------------------------------------
+       OFFCANVAS (mobile) SIDEBAR
+    -------------------------------------------------------------- */
+    .offcanvas-body .sidebar-header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .offcanvas-body .sidebar-header img {
+      width: 60px;
+      height: auto;
+      margin-bottom: 0.5rem;
+    }
+    .offcanvas-body .sidebar-header h4 {
+      font-size: 1.1rem;
+      margin: 0;
+      color: #343a40;
+    }
+    .offcanvas-body .btn-sidebar {
+      display: block;
+      width: calc(100% - 1.5rem);
+      margin: 0.5rem 0;
+      margin-left: 0.75rem;
+      margin-right: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+      color: #343a40;
+      background-color: #f8f9fa;
+      border: none;
+      border-radius: 0.375rem;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .offcanvas-body .btn-sidebar:hover {
+      background-color: #e2e6ea;
+      color: #343a40;
+      box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+    }
+    .offcanvas-body .btn-sidebar.active {
       background-color: #007bff;
       color: #fff;
       box-shadow: 0 0.25rem 0.5rem rgba(0, 123, 255, 0.4);
@@ -98,8 +142,8 @@
        TOPBAR
     -------------------------------------------------------------- */
     #content {
-      margin-left: 240px;
-      width: calc(100% - 240px);
+      margin-left: 0; /* will be overridden on md+ */
+      width: 100%;
     }
     #topbar {
       height: 56px;
@@ -110,9 +154,9 @@
       padding: 0 1rem;
       position: fixed;
       top: 0;
-      left: 240px;
-      width: calc(100% - 240px);
-      z-index: 1000;
+      left: 0;
+      width: 100%;
+      z-index: 1001;
     }
     #topbar .breadcrumb {
       margin-bottom: 0;
@@ -120,7 +164,32 @@
     }
     #main-content {
       margin-top: 56px;
-      padding: 1.5rem;
+      padding: 1rem;
+    }
+
+    /* On desktop, shift content right to accommodate sidebar */
+    @media (min-width: 768px) {
+      #sidebar-desktop {
+        display: flex;
+      }
+      #content {
+        margin-left: 240px;
+        width: calc(100% - 240px);
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      #sidebar-desktop {
+        display: none; /* hide desktop sidebar on mobile */
+      }
+      #content {
+        margin-left: 0;
+        width: 100%;
+      }
+      #main-content {
+        margin-top: 56px;
+        padding: 0.75rem;
+      }
     }
 
     /* --------------------------------------------------------------
@@ -136,36 +205,13 @@
       font-weight: 600;
       color: #495057;
     }
-
-    /* --------------------------------------------------------------
-       RESPONSIVE TWEAKS
-    -------------------------------------------------------------- */
-    @media (max-width: 767.98px) {
-      #sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-      }
-      #content {
-        margin-left: 0;
-        width: 100%;
-      }
-      #topbar {
-        left: 0;
-        width: 100%;
-      }
-      #main-content {
-        margin-top: 56px;
-        padding: 1rem;
-      }
-    }
   </style>
 
   {% block head %}{% endblock %}
 </head>
 <body>
-  <!-- Sidebar -->
-  <nav id="sidebar">
+  <!-- DESKTOP SIDEBAR -->
+  <nav id="sidebar-desktop" class="d-none d-md-flex">
     <div class="sidebar-header">
       <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
       <h4>Timesheet Portal</h4>
@@ -179,7 +225,7 @@
       <i class="fas fa-file-alt me-2"></i>Submit Timesheet
     </a>
 
-    <!-- Manager Login Button (always visible) -->
+    <!-- Manager Login Button -->
     <a
       href="{{ url_for('login') }}"
       class="btn-sidebar {% if request.path == '/login' %}active{% endif %}"
@@ -188,7 +234,7 @@
     </a>
 
     {% if session.get('is_manager') %}
-    <!-- Dashboard (only for managers) -->
+    <!-- Dashboard Button -->
     <a
       href="{{ url_for('dashboard') }}"
       class="btn-sidebar {% if request.path == '/dashboard' %}active{% endif %}"
@@ -196,7 +242,7 @@
       <i class="fas fa-table me-2"></i>Dashboard
     </a>
 
-    <!-- Log Out (only for managers) -->
+    <!-- Log Out Button -->
     <a
       href="{{ url_for('logout') }}"
       class="btn-sidebar text-danger"
@@ -206,18 +252,83 @@
     {% endif %}
   </nav>
 
-  <!-- Page Content -->
-  <div id="content">
-    <!-- Topbar (breadcrumb / page title) -->
-    <div id="topbar">
+  <!-- MOBILE OFFCANVAS SIDEBAR -->
+  <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="offcanvasSidebar" aria-labelledby="offcanvasSidebarLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvasSidebarLabel">Timesheet Portal</h5>
+      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" />
+        <h4>Timesheet Portal</h4>
+      </div>
+
+      <!-- Submit Timesheet Button -->
+      <a
+        href="{{ url_for('submit_timesheet') }}"
+        class="btn-sidebar {% if request.path == '/' %}active{% endif %}"
+        data-bs-dismiss="offcanvas"
+      >
+        <i class="fas fa-file-alt me-2"></i>Submit Timesheet
+      </a>
+
+      <!-- Manager Login Button -->
+      <a
+        href="{{ url_for('login') }}"
+        class="btn-sidebar {% if request.path == '/login' %}active{% endif %}"
+        data-bs-dismiss="offcanvas"
+      >
+        <i class="fas fa-user-shield me-2"></i>Manager
+      </a>
+
+      {% if session.get('is_manager') %}
+      <!-- Dashboard Button -->
+      <a
+        href="{{ url_for('dashboard') }}"
+        class="btn-sidebar {% if request.path == '/dashboard' %}active{% endif %}"
+        data-bs-dismiss="offcanvas"
+      >
+        <i class="fas fa-table me-2"></i>Dashboard
+      </a>
+
+      <!-- Log Out Button -->
+      <a
+        href="{{ url_for('logout') }}"
+        class="btn-sidebar text-danger"
+        data-bs-dismiss="offcanvas"
+      >
+        <i class="fas fa-sign-out-alt me-2"></i>Log Out
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Topbar -->
+  <nav id="topbar" class="navbar navbar-expand-lg navbar-light bg-white">
+    <div class="container-fluid">
+      <!-- Hamburger for mobile -->
+      <button
+        class="btn btn-outline-secondary d-md-none me-2"
+        type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasSidebar"
+        aria-controls="offcanvasSidebar"
+      >
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <!-- Breadcrumb / Page Title -->
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0">
           {% block breadcrumb %}{% endblock %}
         </ol>
       </nav>
     </div>
+  </nav>
 
-    <!-- Main Content -->
+  <!-- Main Content -->
+  <div id="content">
     <div id="main-content">
       {% block content %}{% endblock %}
     </div>
