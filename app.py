@@ -1,18 +1,15 @@
-# app.py
-import os
-from datetime import datetime, timedelta
-from io import BytesIO
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
+from io import BytesIO
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, Alignment
 
-# Config
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'devkey')
+app.config['SECRET_KEY'] = 'supersecretkey'  # Replace with your actual key
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///timesheets.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -20,13 +17,15 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# Models
-class User(UserMixin, db.Model):
+
+# ------------------------ Models ------------------------
+
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    email = db.Column(db.String(150), unique=True, nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
-    role = db.Column(db.String(50), default='contractor')
+    role = db.Column(db.String(20), default='contractor')  # or 'manager'
 
 class Timesheet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -45,73 +44,143 @@ class Timesheet(db.Model):
     submitted_on = db.Column(db.DateTime, default=datetime.utcnow)
     approved_on = db.Column(db.DateTime, nullable=True)
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Routes
+
+# ------------------------ Routes ------------------------
+
 @app.route('/')
+def home():
+    return render_template('index.html')
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username'].strip()
+        email = request.form['email'].strip().lower()
+        password = request.form['password']
+
+        if not username or not email or not password:
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('register'))
+
+        if '@' not in email or '.' not in email:
+            flash('Please enter a valid email address.', 'danger')
+            return redirect(url_for('register'))
+
+        existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+        if existing_user:
+            flash('Username or email already exists.', 'warning')
+            return redirect(url_for('register'))
+
+        hashed_pw = generate_password_hash(password)
+        new_user = User(username=username, email=email, password=hashed_pw, role='contractor')
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash('Account created. Please log in.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('submit_timesheet'))
+
+        flash('Invalid credentials.', 'danger')
+    return render_template('login.html')
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('home'))
+
+
+@app.route('/submit', methods=['GET', 'POST'])
 @login_required
 def submit_timesheet():
-    if current_user.role != 'contractor':
-        abort(403)
+    if request.method == 'POST':
+        contractor_name = current_user.username
+        client = request.form['client']
+        site_address = request.form['site_address']
+        week_start = datetime.strptime(request.form['week_start'], '%Y-%m-%d').date()
+        week_end = datetime.strptime(request.form['week_end'], '%Y-%m-%d').date()
+        basic_hours = float(request.form['basic_hours'])
+        saturday_hours = float(request.form['saturday_hours'])
+        sunday_hours = float(request.form['sunday_hours'])
+        hourly_rate = float(request.form['hourly_rate'])
+
+        total_hours = basic_hours + saturday_hours + sunday_hours
+        calculated_pay = (
+            basic_hours * hourly_rate +
+            saturday_hours * hourly_rate * 1.5 +
+            sunday_hours * hourly_rate * 1.75
+        )
+
+        ts = Timesheet(
+            contractor_name=contractor_name,
+            client=client,
+            site_address=site_address,
+            week_start=week_start,
+            week_end=week_end,
+            basic_hours=basic_hours,
+            saturday_hours=saturday_hours,
+            sunday_hours=sunday_hours,
+            hourly_rate=hourly_rate,
+            total_hours=total_hours,
+            calculated_pay=calculated_pay,
+        )
+        db.session.add(ts)
+        db.session.commit()
+
+        return redirect(url_for('thank_you'))
+
     return render_template('submit.html')
 
-@app.route('/', methods=['POST'])
+
+@app.route('/thank_you')
 @login_required
-def handle_submission():
-    if current_user.role != 'contractor':
-        abort(403)
-
-    data = request.form
-    week_start = datetime.strptime(data['week_start'], '%Y-%m-%d').date()
-    week_end = week_start + timedelta(days=6)
-    basic = float(data['basic_hours'])
-    sat = float(data['saturday_hours'])
-    sun = float(data['sunday_hours'])
-    rate = float(data['hourly_rate'])
-
-    # Calculate pay
-    total_hours = basic + sat + sun
-    pay = (basic * rate) + (sat * rate * 1.5) + (sun * rate * 1.75)
-
-    ts = Timesheet(
-        contractor_name=data['contractor_name'],
-        client=data['client'],
-        site_address=data['site_address'],
-        week_start=week_start,
-        week_end=week_end,
-        basic_hours=basic,
-        saturday_hours=sat,
-        sunday_hours=sun,
-        hourly_rate=rate,
-        total_hours=total_hours,
-        calculated_pay=pay,
-        approved=False,
-        submitted_on=datetime.utcnow()
-    )
-    db.session.add(ts)
-    db.session.commit()
+def thank_you():
     return render_template('thank_you.html')
+
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
     if current_user.role != 'manager':
         abort(403)
-    sheets = Timesheet.query.order_by(Timesheet.submitted_on.desc()).all()
-    return render_template('dashboard.html', sheets=sheets)
+    timesheets = Timesheet.query.order_by(Timesheet.submitted_on.desc()).all()
+    return render_template('dashboard.html', timesheets=timesheets)
 
-@app.route('/approve/<int:sheet_id>')
+
+@app.route('/approve/<int:ts_id>')
 @login_required
-def approve_timesheet(sheet_id):
+def approve_timesheet(ts_id):
     if current_user.role != 'manager':
         abort(403)
-    ts = Timesheet.query.get_or_404(sheet_id)
+
+    ts = Timesheet.query.get_or_404(ts_id)
     ts.approved = True
     ts.approved_on = datetime.utcnow()
     db.session.commit()
+
     return redirect(url_for('dashboard'))
+
 
 @app.route('/export')
 @login_required
@@ -119,7 +188,7 @@ def export_timesheets():
     if current_user.role != 'manager':
         abort(403)
 
-    submissions = Timesheet.query.filter_by(approved=True).all()
+    timesheets = Timesheet.query.filter_by(approved=True).all()
 
     wb = Workbook()
     ws = wb.active
@@ -136,7 +205,7 @@ def export_timesheets():
         cell.font = Font(bold=True)
         cell.alignment = Alignment(horizontal='center')
 
-    for ts in submissions:
+    for ts in timesheets:
         ws.append([
             ts.contractor_name,
             ts.client,
@@ -153,76 +222,33 @@ def export_timesheets():
         ])
 
     for column in ws.columns:
-        max_length = 0
+        max_len = 0
         column_letter = get_column_letter(column[0].column)
         for cell in column:
             if cell.value:
-                max_length = max(max_length, len(str(cell.value)))
-        ws.column_dimensions[column_letter].width = max_length + 2
+                max_len = max(max_len, len(str(cell.value)))
+        ws.column_dimensions[column_letter].width = max_len + 2
 
     output = BytesIO()
     wb.save(output)
     output.seek(0)
 
-    return send_file(output, download_name='Approved_Timesheets.xlsx', as_attachment=True)
+    return send_file(output, download_name="Approved_Timesheets.xlsx", as_attachment=True)
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        user = User.query.filter_by(username=request.form['username']).first()
-        if user and check_password_hash(user.password, request.form['password']):
-            login_user(user)
-            return redirect(url_for('submit_timesheet'))
-        flash('Invalid username or password', 'danger')
-    return render_template('login.html')
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form['username'].strip()
-        email = request.form['email'].strip().lower()
-        password = request.form['password']
-
-        if not username or not email or not password:
-            flash('All fields are required.', 'danger')
-            return redirect(url_for('register'))
-
-        if '@' not in email:
-            flash('Please enter a valid email.', 'danger')
-            return redirect(url_for('register'))
-
-        existing_user = User.query.filter(
-            (User.username == username) | (User.email == email)
-        ).first()
-        if existing_user:
-            flash('Username or email already registered.', 'danger')
-            return redirect(url_for('register'))
-
-        hashed_pw = generate_password_hash(password)
-        new_user = User(username=username, email=email, password=hashed_pw)
-
-        db.session.add(new_user)
-        db.session.commit()
-
-        flash('Account created! Please log in.', 'success')
-        return redirect(url_for('login'))
-
-    return render_template('register.html')
-
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('login'))
-
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
 @app.route('/initdb')
+@login_required
 def initdb():
+    if current_user.role != 'manager':
+        abort(403)
     try:
         db.create_all()
-        return "✅ Database tables created successfully!"
+        return "✅ Tables checked/created successfully!"
     except Exception as e:
-        return f"❌ Error creating tables: {str(e)}"
+        return f"❌ Error: {str(e)}"
+
+
+# ------------------------ Run ------------------------
+
+if __name__ == '__main__':
+    app.run(debug=True)
