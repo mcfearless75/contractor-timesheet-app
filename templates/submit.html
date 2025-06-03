@@ -1,39 +1,17 @@
 {% extends "base.html" %}
-
 {% block title %}Submit Timesheet{% endblock %}
-
-{% block breadcrumb %}
-  <li class="breadcrumb-item"><a href="{{ url_for('submit_timesheet') }}">Home</a></li>
-  <li class="breadcrumb-item active" aria-current="page">Submit Timesheet</li>
-{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
   <div class="row justify-content-center">
     <div class="col-xl-8 col-lg-10">
-      <!-- Card wrapper to make the form “pop” -->
       <div class="card shadow-sm mb-5">
         <div class="card-header bg-white">
           <h4 class="mb-0">Submit Your Timesheet</h4>
         </div>
         <div class="card-body">
-          <form id="timesheetForm" method="POST" action="/">
+          <form id="timesheetForm" method="POST" action="{{ url_for('submit_timesheet') }}">
             <div class="row g-3">
-              <!-- Contractor Name -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="contractor_name"
-                    name="contractor_name"
-                    placeholder="Contractor Name"
-                    required
-                  >
-                  <label for="contractor_name">Contractor Name</label>
-                  <div class="error-text" id="error-contractor_name"></div>
-                </div>
-              </div>
               <!-- Client -->
               <div class="col-md-6">
                 <div class="form-floating">
@@ -49,11 +27,8 @@
                   <div class="error-text" id="error-client"></div>
                 </div>
               </div>
-            </div>
-
-            <div class="row g-3 mt-3">
-              <!-- Site Address (full width) -->
-              <div class="col-12">
+              <!-- Site Address -->
+              <div class="col-md-6">
                 <div class="form-floating">
                   <input
                     type="text"

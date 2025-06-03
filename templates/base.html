@@ -98,7 +98,7 @@
     -------------------------------------------------------------- */
     #content {
       margin-left: 240px; /* push content right of sidebar */
-      margin-top: 0;      /* no top bar, so start at very top */
+      margin-top: 0;      /* start at very top */
       padding: 1rem;
     }
 
@@ -111,24 +111,24 @@
         width: 100px;
       }
       #sidebar .sidebar-header img {
-        width: 48px; /* slightly smaller on mobile */
+        width: 48px; /* smaller logo */
       }
       #sidebar .sidebar-header h4 {
         font-size: 0;      /* hide "Timesheet Portal" text */
-        line-height: 0;    /* remove any leftover space */
+        line-height: 0;    /* remove leftover space */
         margin-bottom: 0;
       }
       #sidebar .btn-sidebar {
-        width: calc(100% - 1rem); /* 100px - some padding */
+        width: calc(100% - 1rem); /* 100px - padding */
         padding: 0.4rem 0.5rem;
         font-size: 0.9rem;
       }
       #sidebar .btn-sidebar i {
-        margin-right: 0;   /* hide icon spacing so icon stands alone */
-        font-size: 1.2rem; /* slightly larger icon to remain legible */
+        margin-right: 0;   /* only icon visible */
+        font-size: 1.2rem;
       }
       #sidebar .btn-sidebar span {
-        display: none; /* hide the textual label, keep only icon */
+        display: none; /* hide textual label */
       }
 
       /* Adjust main content */
@@ -163,34 +163,42 @@
       <h4>Timesheet Portal</h4>
     </div>
 
-    <!-- Full labels on desktop; icon‐only on mobile -->
-    <a
-      href="{{ url_for('submit_timesheet') }}"
-      class="btn-sidebar {% if request.path == '/' %}active{% endif %}"
-    >
-      <i class="fas fa-file-alt"></i> <span>Submit Timesheet</span>
-    </a>
+    {% if current_user.is_authenticated %}
+      <a
+        href="{{ url_for('submit_timesheet') }}"
+        class="btn-sidebar {% if request.path == '/' %}active{% endif %}"
+      >
+        <i class="fas fa-file-alt"></i> <span>Submit Timesheet</span>
+      </a>
 
-    <a
-      href="{{ url_for('login') }}"
-      class="btn-sidebar {% if request.path == '/login' %}active{% endif %}"
-    >
-      <i class="fas fa-user-shield"></i> <span>Manager Login</span>
-    </a>
+      {% if current_user.role == 'manager' %}
+      <a
+        href="{{ url_for('dashboard') }}"
+        class="btn-sidebar {% if request.path == '/dashboard' %}active{% endif %}"
+      >
+        <i class="fas fa-table"></i> <span>Dashboard</span>
+      </a>
+      {% endif %}
 
-    {% if session.get('is_manager') %}
-    <a
-      href="{{ url_for('dashboard') }}"
-      class="btn-sidebar {% if request.path == '/dashboard' %}active{% endif %}"
-    >
-      <i class="fas fa-table"></i> <span>Dashboard</span>
-    </a>
-    <a
-      href="{{ url_for('logout') }}"
-      class="btn-sidebar text-danger"
-    >
-      <i class="fas fa-sign-out-alt"></i> <span>Log Out</span>
-    </a>
+      <a
+        href="{{ url_for('logout') }}"
+        class="btn-sidebar text-danger"
+      >
+        <i class="fas fa-sign-out-alt"></i> <span>Log Out</span>
+      </a>
+    {% else %}
+      <a
+        href="{{ url_for('login') }}"
+        class="btn-sidebar {% if request.path == '/login' %}active{% endif %}"
+      >
+        <i class="fas fa-user-shield"></i> <span>Contractor Login</span>
+      </a>
+      <a
+        href="{{ url_for('register') }}"
+        class="btn-sidebar {% if request.path == '/register' %}active{% endif %}"
+      >
+        <i class="fas fa-user-plus"></i> <span>Register</span>
+      </a>
     {% endif %}
   </nav>
 

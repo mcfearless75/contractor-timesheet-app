@@ -1,129 +1,54 @@
 {% extends "base.html" %}
-
-{% block title %}Dashboard | Timesheet Portal{% endblock %}
-
-{% block breadcrumb %}
-  <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-{% endblock %}
+{% block title %}Approval Dashboard{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-  <!-- Top stat cards -->
-  <div class="row g-4">
-    <!-- Card: Expected Last Week -->
-    <div class="col-md-3 col-sm-6">
-      <div class="card text-white bg-info h-100">
-        <div class="card-body d-flex align-items-center">
-          <i class="fas fa-calendar-week fa-2x me-3"></i>
-          <div>
-            <div class="card-title">Expected Last Week</div>
-            <h3 class="mb-0">8</h3>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Card: Submitted -->
-    <div class="col-md-3 col-sm-6">
-      <div class="card text-white bg-warning h-100">
-        <div class="card-body d-flex align-items-center">
-          <i class="fas fa-upload fa-2x me-3"></i>
-          <div>
-            <div class="card-title">Submitted</div>
-            <h3 class="mb-0">1</h3>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Card: Approved -->
-    <div class="col-md-3 col-sm-6">
-      <div class="card text-white bg-success h-100">
-        <div class="card-body d-flex align-items-center">
-          <i class="fas fa-check-circle fa-2x me-3"></i>
-          <div>
-            <div class="card-title">Approved</div>
-            <h3 class="mb-0">0</h3>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Card: Exported -->
-    <div class="col-md-3 col-sm-6">
-      <div class="card text-white bg-secondary h-100">
-        <div class="card-body d-flex align-items-center">
-          <i class="fas fa-file-export fa-2x me-3"></i>
-          <div>
-            <div class="card-title">Exported</div>
-            <h3 class="mb-0">0</h3>
-          </div>
-        </div>
-      </div>
-    </div>
+  <h3 class="mb-4">Pending Timesheet Approvals</h3>
+  {% if timesheets %}
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Contractor</th>
+          <th>Client</th>
+          <th>Site Address</th>
+          <th>Week</th>
+          <th>Basic Hrs</th>
+          <th>Sat Hrs</th>
+          <th>Sun Hrs</th>
+          <th>Total Hrs</th>
+          <th>Rate (£)</th>
+          <th>Pay (£)</th>
+          <th>Submitted On</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ts in timesheets %}
+        <tr>
+          <td>{{ ts.contractor.username }}</td>
+          <td>{{ ts.client }}</td>
+          <td>{{ ts.site_address }}</td>
+          <td>{{ ts.week_start.strftime('%d/%m/%Y') }}–{{ ts.week_end.strftime('%d/%m/%Y') }}</td>
+          <td>{{ '%.2f' % ts.basic_hours }}</td>
+          <td>{{ '%.2f' % ts.saturday_hours }}</td>
+          <td>{{ '%.2f' % ts.sunday_hours }}</td>
+          <td>{{ '%.2f' % ts.total_hours }}</td>
+          <td>{{ '%.2f' % ts.hourly_rate }}</td>
+          <td>{{ '%.2f' % ts.calculated_pay }}</td>
+          <td>{{ ts.submitted_on.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>
+            <a href="{{ url_for('approve', ts_id=ts.id) }}" class="btn btn-success btn-sm">
+              Approve
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-
-  <!-- Pending Timesheets Table -->
-  <div class="row mt-4">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header">Pending Timesheets</div>
-        <div class="card-body">
-          {% if timesheets and timesheets|length > 0 %}
-            <div class="table-responsive">
-              <table class="table table-hover align-middle">
-                <thead class="table-light">
-                  <tr>
-                    <th>Name</th>
-                    <th>Client</th>
-                    <th>Site Address</th>
-                    <th>Week</th>
-                    <th>Total Hrs</th>
-                    <th>Est. Pay (£)</th>
-                    <th>Submitted On</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for t in timesheets %}
-                  <tr>
-                    <td>{{ t.contractor_name }}</td>
-                    <td>{{ t.client }}</td>
-                    <td>{{ t.site_address }}</td>
-                    <td>
-                      {{ t.week_start.strftime('%d/%m/%Y') }}–{{ t.week_end.strftime('%d/%m/%Y') }}
-                    </td>
-                    <td>{{ '%.2f'|format(t.total_hours) }}</td>
-                    <td>{{ '£%.2f'|format(t.calculated_pay) }}</td>
-                    <td>{{ t.submitted_on.strftime('%d/%m/%Y %H:%M') }}</td>
-                    <td>
-                      <a 
-                        href="{{ url_for('approve', ts_id=t.id) }}" 
-                        class="btn btn-sm btn-success"
-                      >
-                        Approve
-                      </a>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          {% else %}
-            <p class="no-data">No pending timesheets at the moment.</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Export All Approved Button -->
-  <div class="row mt-4">
-    <div class="col-12 text-end">
-      <a 
-        href="{{ url_for('export_excel') }}" 
-        class="btn btn-primary"
-      >
-        <i class="fas fa-download me-1"></i> Download All Approved as Excel
-      </a>
-    </div>
-  </div>
+  {% else %}
+    <p>No pending timesheets at the moment.</p>
+  {% endif %}
 </div>
 {% endblock %}
