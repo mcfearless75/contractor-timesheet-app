@@ -237,15 +237,12 @@ def export_timesheets():
 
 
 @app.route('/initdb')
-@login_required
 def initdb():
-    if current_user.role != 'manager':
-        abort(403)
     try:
         db.create_all()
-        return "✅ Tables checked/created successfully!"
+        return "✅ Database tables created successfully!"
     except Exception as e:
-        return f"❌ Error: {str(e)}"
+        return f"❌ Error creating tables: {str(e)}"
 
 
 # ------------------------ Run ------------------------
