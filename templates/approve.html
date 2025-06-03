@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">Approve Timesheets</h2>
+
+  {% if timesheets %}
+    <form method="POST" action="{{ url_for('approve') }}">
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Select</th>
+              <th>Contractor</th>
+              <th>Client</th>
+              <th>Site</th>
+              <th>Week Start</th>
+              <th>Total Hours</th>
+              <th>Pay (£)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in timesheets %}
+            <tr>
+              <td>
+                {% if not t.approved %}
+                <input type="checkbox" name="approve_ids" value="{{ t.id }}">
+                {% endif %}
+              </td>
+              <td>{{ t.contractor_name }}</td>
+              <td>{{ t.client }}</td>
+              <td>{{ t.site_address }}</td>
+              <td>{{ t.week_start.strftime('%Y-%m-%d') }}</td>
+              <td>{{ t.total_hours }}</td>
+              <td>£{{ "%.2f"|format(t.calculated_pay) }}</td>
+              <td>
+                {% if t.approved %}
+                  <span class="badge bg-success">Approved</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark">Pending</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <button type="submit" class="btn btn-primary">Approve Selected</button>
+    </form>
+  {% else %}
+    <p>No timesheets to approve at this time.</p>
+  {% endif %}
+</div>
+{% endblock %}

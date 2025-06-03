@@ -1,54 +1,45 @@
 {% extends "base.html" %}
-{% block title %}Approval Dashboard{% endblock %}
-
 {% block content %}
-<div class="container-fluid">
-  <h3 class="mb-4">Pending Timesheet Approvals</h3>
+<div class="container py-4">
+  <h2 class="mb-4">Your Submitted Timesheets</h2>
+
   {% if timesheets %}
-  <div class="table-responsive">
-    <table class="table table-striped align-middle">
-      <thead class="table-dark">
-        <tr>
-          <th>Contractor</th>
-          <th>Client</th>
-          <th>Site Address</th>
-          <th>Week</th>
-          <th>Basic Hrs</th>
-          <th>Sat Hrs</th>
-          <th>Sun Hrs</th>
-          <th>Total Hrs</th>
-          <th>Rate (£)</th>
-          <th>Pay (£)</th>
-          <th>Submitted On</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for ts in timesheets %}
-        <tr>
-          <td>{{ ts.contractor.username }}</td>
-          <td>{{ ts.client }}</td>
-          <td>{{ ts.site_address }}</td>
-          <td>{{ ts.week_start.strftime('%d/%m/%Y') }}–{{ ts.week_end.strftime('%d/%m/%Y') }}</td>
-          <td>{{ '%.2f' % ts.basic_hours }}</td>
-          <td>{{ '%.2f' % ts.saturday_hours }}</td>
-          <td>{{ '%.2f' % ts.sunday_hours }}</td>
-          <td>{{ '%.2f' % ts.total_hours }}</td>
-          <td>{{ '%.2f' % ts.hourly_rate }}</td>
-          <td>{{ '%.2f' % ts.calculated_pay }}</td>
-          <td>{{ ts.submitted_on.strftime('%Y-%m-%d %H:%M') }}</td>
-          <td>
-            <a href="{{ url_for('approve', ts_id=ts.id) }}" class="btn btn-success btn-sm">
-              Approve
-            </a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead class="table-dark">
+          <tr>
+            <th>Client</th>
+            <th>Site</th>
+            <th>Week Start</th>
+            <th>Week End</th>
+            <th>Total Hours</th>
+            <th>Pay (£)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in timesheets %}
+          <tr>
+            <td>{{ t.client }}</td>
+            <td>{{ t.site_address }}</td>
+            <td>{{ t.week_start.strftime('%Y-%m-%d') }}</td>
+            <td>{{ t.week_end.strftime('%Y-%m-%d') }}</td>
+            <td>{{ t.total_hours }}</td>
+            <td>£{{ "%.2f"|format(t.calculated_pay) }}</td>
+            <td>
+              {% if t.approved %}
+                <span class="badge bg-success">Approved</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">Pending</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% else %}
-    <p>No pending timesheets at the moment.</p>
+    <p>No timesheets submitted yet.</p>
   {% endif %}
 </div>
 {% endblock %}
